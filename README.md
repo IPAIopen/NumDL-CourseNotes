@@ -2,7 +2,7 @@
 
 This repository contains lecture slides and MATLAB codes for a one-semester graduate-level class on numerical methods for deep learning.
 
-This course was first designed and taught by [Lars Ruthotto](http://www.mathcs.emory.edu/~lruthot/)[Emory University](http://www.emory.edu) and [Eldad Haber](https://sites.google.com/site/ehaberubc/home)[University of British Columbia](https://www.ubc.ca/) in the Spring of 2018. 
+This course was first designed and taught by [Lars Ruthotto](http://www.mathcs.emory.edu/~lruthot/) at [Emory University](http://www.emory.edu) and [Eldad Haber](https://sites.google.com/site/ehaberubc/home) at [University of British Columbia](https://www.ubc.ca/) in the Spring of 2018. 
 
 ## Scope 
 
