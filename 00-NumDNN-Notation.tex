@@ -60,7 +60,7 @@
 		\item $\bfd, \bfD$ - search directions
 		\item $\alpha$ - step size
 		\item $\lambda$ - regularization parameter
-		\item $\nabla_\bfx F$ - gradient, if $ F : \R^k \to \R^l $, then $\nabla F(\bfx) \in \R^{k\times l}$.
+		\item $\nabla_\bfx F$ - gradient, if $ F : \R^k \to \R^l $, then $\nabla F(\bfx) \in \R^{k\times l}$
 		\item $\bfJ_\bfx F$ - Jacobian of $F$ with respect to $\bfx$, $\bfJ_{\bfx} F = (\nabla_\bfx F)^\top$
 	\end{itemize}
 \end{frame}
@@ -68,7 +68,7 @@
 \begin{frame}
 	\frametitle{Linear Algebra - 1}
 	\begin{itemize}
-		\item $\bfe_k$ - vector of all length and length $k$.
+		\item $\bfe_k \in\R^k$ - vector of all ones
 		\item $\bfI_k$ - $k\times k$ identity matrix
 		\item $\kappa(\bfA)$ - condition number of $\bfA$
 		\item $\sigma_1(\bfA)\geq\ldots\geq\sigma_k(\bfA)\geq 0$ - singular values of $\bfA$
@@ -82,7 +82,7 @@
 	\begin{itemize}
 		\item $\odot$ - Hadamard product
 		$$
-			\bfC_{ij} = \bfA_{ij} \cdot \bfB_{ij}, \quad for \bfB,\bfA \in \R^{k\times l}
+			\bfC_{ij} = \bfA_{ij} \cdot \bfB_{ij}, \quad \text{for} \quad \bfB,\bfA \in \R^{k\times l}
 		$$
 		MATLAB: $\texttt{C = A.*B}$
 		\item $\otimes$ - Kronecker product
@@ -91,7 +91,7 @@
 				\begin{array}{rrrrr}
 					\bfA_{11} \bfB & \bfA_{12} \bfB & \dots & \bfA_{1l} \bfB \\
 					\vdots         & \vdots         & \vdots& \vdots\\
-					\bfA_{21} \bfB & \bfA_{22} \bfB & \dots & \bfA_{1l} \bfB \\
+					\bfA_{k1} \bfB & \bfA_{k2} \bfB & \dots & \bfA_{kl} \bfB \\
 				\end{array}
 			\right)
 		$$
@@ -129,7 +129,7 @@
 		$$
 		MATLAB: \texttt{V = reshape(v,k,l)}.
 	
-		\item ${\rm diag}(\bfv)$ - diagonal matrix with elements of $\bfv \in \R^k$ on diagonal.
+		\item ${\rm diag}(\bfv)$ - diagonal matrix with elements of $\bfv \in \R^k$ on diagonal
 		
 		MATLAB: \texttt{V = diag(v(:))}
 		
