@@ -1,0 +1,313 @@
+\documentclass[12pt,fleqn,handout]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+\date{}
+
+
+\title{Introduction to Deep Neural Networks}
+\subtitle{Numerical Methods for Deep Learning}
+
+\begin{document}
+
+\makebeamertitle
+
+\section{Motivation} % (fold)
+\label{sec:motivation}
+\begin{frame}[fragile]\frametitle{Why Deep Networks?}
+
+\begin{itemize}
+\item Universal approximation theorem of NN suggests that we can approximate {\bf any} function by
+two layers.
+\item But - The width of the layer can be very large ${\cal O}(n\cdot n_f)$
+\item
+Deeper architectures can lead to more efficient descriptions of the problem.
+\item
+No real proof but lots of practical experience.
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Deep Neural Networks}
+
+How deep is deep?
+
+We will answer this question later ...
+
+\bigskip
+\pause
+
+Until recently, the standard architecture was
+\begin{eqnarray*}
+\bfY_1 &=& \sigma(\bfK_0\bfY_0 + b_0) \\
+\vdots & =&  \vdots \\
+ \bfY_N &=& \sigma(\bfK_{N-1}  \bfY_{N-1}+ b_{N-1})
+ \end{eqnarray*}
+
+\bigskip
+\pause
+
+And use $\bfY_N$ to classify. This leads to the optimization problem
+$$ 
+\min_{\bfK_{0,\ldots,N-1},\bfb_{0,\ldots,N-1},\bfW} \ \ E\left(\bfW \bfY_N(\bfK_1,\ldots,\bfK_{N-1},b_1,\ldots, b_{N-1}) , \bfC^{\rm obs} \right)
+ $$
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Example: The Alexnet~\cite{KrizhevskySutskeverHinton2012} for Image Classification}
+
+\begin{columns}
+	\column{.6\textwidth}
+	\begin{itemize}
+		\item Complex architectures 
+		\item trained on multiple GPUs
+		\item $\approx $ 60 million weights
+	\end{itemize}	
+	\column{.4\textwidth}
+\begin{center}
+\includegraphics[width=2.9cm]{Alexnet-wikimedia}
+\end{center}
+\end{columns}
+
+
+
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]\frametitle{Deep Neural Networks in Practice}
+
+\begin{columns}
+\column{.75\textwidth}
+(Some) challenges:
+\begin{itemize}
+\item
+Computational costs (architecture have millions or billions of parameters)
+\item
+difficult to design
+\item
+difficult to train (exploding/vanishing gradients)
+\item
+unpredictable performance
+\end{itemize}
+
+\bigskip
+\invisible<beamer|1>{
+In 2015, He et al.~\cite{he2016deep,he2016identity} came with a new architecture that solves many of the problems}
+	
+\column{.25\textwidth}
+\invisible<beamer|1>{
+\includegraphics[width=30mm]{resnet-wikimedia}}
+\end{columns}
+
+
+\only<beamer|2>{}
+\end{frame}
+
+
+
+
+% section motivation (end)
+
+\section{Residual Neural Networks} % (fold)
+\label{sec:residual_neural_networks}
+
+\begin{frame}[fragile]\frametitle{Simplified Residual Neural Network}
+
+Residual Network
+
+\bigskip
+
+\begin{eqnarray*}
+\bfY_1 &=& \bfY_0 + \sigma(\bfK_0\bfY_0 + b_0) \\
+\vdots &=&  \vdots \\
+ \bfY_N &=& \bfY_{N-1} + \sigma( \bfK_{N-1}\bfY_{N-1} + b_{N-1})
+ \end{eqnarray*}
+
+And use $\bfY_N$ to classify. This leads to the optimization problem
+$$ 
+\min_{\bfK_{0,\ldots,N-1},\bfb_{0,\ldots,N-1},\bfW} \ \ E\left(\bfW\bfY_N(\bfK_1,\ldots,\bfK_{N-1},b_1,\ldots, b_{N-1}), \bfC^{\rm obs} \right)
+ $$
+
+\bigskip
+\begin{center}
+	Leads to smoother objective function~\cite{LiEtAl2017}. 
+	\end{center}
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Stability of Deep Residual Networks}
+
+Why are ResNets more stable?
+
+A small change
+\begin{eqnarray*}
+\bfY_1 &=& \bfY_0 + h \sigma(\bfK_0 \bfY_0  + b_0) \\
+\vdots &=& \vdots \\
+ \bfY_N &=& \bfY_{N-1} + h\sigma(\bfK_{N-1} \bfY_{N-1} + b_{N-1})
+ \end{eqnarray*}
+
+\bigskip
+\pause 
+
+This is nothing but a forward Euler discretization
+of the  Ordinary Differential Equation (ODE)
+$$ \dot{\bfY}(t) = \sigma(\bfK(t) \bfY(t)  + b(t)), \quad \quad \bfY(0) = \bfY_0 $$
+
+We can understand the behavior by learning the dynamics of nonlinear ODEs~\cite{HaberRuthotto2017,E2017}.
+
+\end{frame}
+
+% section residual_neural_networks (end)
+
+\section{Crash Course: ODE} % (fold)
+\label{sec:crash_course_ode}
+\begin{frame}[fragile]\frametitle{Crash Course on ODEs}
+
+Given the ODE
+$$ \dot{\bfy} = f(t,\bfy) $$
+Assumptions:
+\begin{enumerate}
+	\item $f$ differentiable with Jacobian
+$$ \bfJ(t,\bfy) = \left({\frac {\partial f}{\partial \bfy}}\right)^\top$$
+	\item $\bfJ$ changes sufficiently slowly in time 
+\end{enumerate} 
+
+
+Then (see also~\cite{AscherPetzold1998,AscherGreif2011,Ascher2010})
+\begin{itemize}
+\item If $Re({\rm eig}(\bfJ)) > 0\quad \quad \rightarrow$\ Unstable
+\item If $Re({\rm eig}(\bfJ)) < 0\quad \quad \rightarrow$\ Stable (converge to a stationary point)
+\item If $Re({\rm eig}(\bfJ)) = 0\quad \quad \rightarrow$\ Stable, energy bounded
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Stability of Residual Network}
+	
+	Assume forward propagation of single example $\bfy_0$
+	$$ \dot{\bfy}(t) = \sigma(\bfK(t) \bfy(t) + b(t)), \quad \quad \bfy(0) = \bfy_0 $$
+	
+	\bigskip
+	\pause
+	
+	The Jacobian is
+	$$
+	 \bfJ(t) = {\rm diag}\left(\sigma'(\bfK(t) \bfy(t) + b(t))\right) \bfK(t)
+	$$
+	Here, $\sigma'(x) \geq 0$ for $\tanh$, ReLU, \ldots
+	
+	\bigskip
+	\pause
+	
+	Hence, problem is stable when
+	\begin{enumerate}
+		\item $\bfJ$ changes slowly in time
+		\item $Re({\rm eig}\bfK(t)) \leq 0$ for every $t$
+	\end{enumerate}
+	
+	\pause
+	
+	\begin{center}
+		Remember that we  learn $\bfK$ $\leadsto$ ensure stability by regularization/constraints!
+	\end{center}
+	
+	
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Residual Network as a Path Planning Problem}
+
+
+\begin{center}
+	\includegraphics[width=\textwidth]{PathPlanning}
+\end{center}
+
+\bigskip
+\pause
+
+Forward propagation in residual network (continuous)
+$$ \dot{\bfY}(t) = \sigma( \bfK(t) \bfY(t) + b(t)), \qquad \bfY(0) = \bfY_0 $$
+
+The goal is to plan a path (via $\bfK$ and $b$) such that the initial data can be linearly separated
+
+\bigskip
+\pause
+Question: What is a layer, what is depth?
+
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]\frametitle{Stability: Continuous vs. Discrete}
+
+
+Assume $\bfK$ is chosen so that the (continuous) forward propagation is stable
+$$ \dot{\bfY}(t) = \sigma( \bfK \bfY(t)+ b(t)), \qquad \bfY(0) = \bfY_0 $$
+
+And assume we use the forward Euler method to discretize
+$$ \bfY_{j+1} = \bfY_{j} + h \sigma( \bfK_j \bfY_j + b_j) $$
+
+Is the network stable?
+
+
+\bigskip
+\pause
+
+Not always ...
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Stability: A Simple Example}
+
+Look at the simplest possible forward propagation
+$$ \dot{\bfY}(t) = \lambda\bfY(t) $$
+
+And assume we use the forward Euler to discretize
+$$ \bfY_{j+1} = \bfY_{j} + h \lambda \bfY_j = (1+h\lambda) \bfY_j$$
+
+Then the method is stable only if
+$$ |1+h\lambda| \le 1 $$
+
+\bigskip
+
+Not every network is stable! Time step size depends on our Jacobian
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Stability: A Non-Trivial Example}
+
+Consider the antisymmetric kernel model
+$$
+			\bfK(t) = \bfK(t) - \bfK(t)^\top
+$$
+Here, $Re({\rm eig}(\bfJ)(t))= 0$ for all $\theta$.
+
+\bigskip
+\pause
+			
+Assume we use the forward Euler to discretize
+$$ \bfY_{j+1} = \bfY_{j} + h \sigma( (\bfK_i-\bfK_i^\top) \bfY_i + b_i) $$
+Tricky question: How to pick $h$ to ensure stability?
+
+\pause
+
+Answer: Impossible since eigenvalues of Jacobian are imaginary. Need other method than forward Euler.
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+
+\end{document}

@@ -1,0 +1,222 @@
+\documentclass[12pt,fleqn,beamer]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+\date{}
+\title{Stochastic Gradient Descent}
+\subtitle{Numerical Methods for Deep Learning}
+
+\begin{document}
+
+\makebeamertitle
+
+\begin{frame}[fragile]\frametitle{Review: Supervised Learning Problem}
+
+Most machine learning problems are of the following structure
+$$
+\min_{\bftheta} F(\bftheta,\bfY) + R(\bftheta), \quad \text{ with }\quad  F(\bftheta,\bfY) = \frac1n\sum_{i=1}^n f_i(\bftheta,\bfy_i).
+$$
+
+\bigskip
+\pause
+
+For shallow learning, problem might be convex or have a unique minimum.
+For deep networks, problem is usually not convex and has many local minimum
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Review - Optimization Techniques}
+
+So far, we used deterministic gradient-based methods
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k \grad F(\bftheta_k,\bfY), \quad  \nabla F(\theta,\bfY) = \frac1n  \sum_{i=1}^n \nabla f_i(\theta, \bfy_i)$$
+
+\smallskip 
+\pause
+
+Examples: 
+\begin{itemize}
+	\item steepest descent: $ \bfA_k = \bfI$
+	\item Newton: $\bfA_k = \nabla^{2} F(\theta,\bfY) = \sum_{i=1}^N \nabla^{2} f_i(\theta, \bfy_i)$
+\end{itemize}
+
+\bigskip
+\pause
+
+Drawbacks:
+\begin{itemize}
+\item
+Evaluating gradient needs pass through the whole data set (called \emph{epoch}).
+\item
+If data is redundant can be very expensive
+\item 
+Idea: use only a part of the data to update $\bftheta$
+\end{itemize} 
+
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Stochastic Gradient Descent}
+
+Let ${\cal S}_k \subset \{1,2,\ldots,n\}$. Define the batch objective function as 
+$$ F_{{\cal S}_k}(\bftheta) = \frac{1}{|{\cal S}_k|} \sum_{i \in {\cal S}_k} f_i(\bftheta,\bfY_i) $$
+Then a straight forward extension  is
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k  \grad F_{{\cal S}_k}(\bftheta_k) $$
+
+
+Questions
+\begin{itemize}
+\item Would the method converge?
+\item Under what conditions on $\mu_k,\bfA_k,{\cal S}_k$?
+\item How fast?
+\end{itemize}
+
+References: original method~\cite{RobbinsMonro1951}, recent surveys~\cite{Bottou2012,Bertsekas2015,bottou2016optimization}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Stochastic Gradient Descent}
+
+Let ${\cal S}_k \subset \{1,2,\ldots,n\}$. Define the batch objective function as 
+$$ F_{{\cal S}_k}(\bftheta) = \frac{1}{|{\cal S}_k|} \sum_{i \in {\cal S}_k} f_i(\bftheta,\bfY_i) $$
+Then a straight forward extension   is
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k  \grad F_{{\cal S}_k}(\bftheta_k) $$
+
+\bigskip
+\pause
+
+If $\bfA_k = \bfI$, $|{\cal S}_k|=1$ and $\mu_k \rightarrow 0$ slow enough, that is
+$$ \sum_{k=1}^{\infty} \mu_k= \infty \quad \text{ and } \quad \sum_{k=1}^{\infty} \mu_k^2 < \infty$$
+then SGD converges to stationary point \pause (Ex: $\mu_k = k^{-1}$).
+
+\bigskip
+\pause
+
+How fast? Convergence is {\bf sublinear}
+
+\end{frame}
+
+
+\begin{frame}\frametitle{A Glimpse into the theory}
+	Consider the iteration and $\bfA_k=\bfI$
+	$$ 
+	\bftheta_{k+1} = \bftheta_k - \mu_k  \grad F_{{\cal S}_k}(\bftheta_k) 
+	$$
+	\pause
+	Re-write this as
+	$$ 
+	\bftheta_{k+1} = \bftheta_k - \underbrace{\mu_k \grad F(\bftheta,\bfY)}_{\rm true\ gradient} -  \underbrace{\mu_k \left ( \grad F_{{\cal S}_k}(\bftheta_k)  - \grad F (\bftheta,\bfY)\right)}_{\rm noise}
+	$$
+	
+	\pause
+	
+	Note that (unbiased estimator)
+	$$
+	 {\mathbb{E}} (\grad F_{{\cal S}_k}(\bftheta_k)) = \grad F (\bftheta).
+	$$
+	
+	\pause
+	
+	Finally note that
+	$$
+		{\rm Var}\left( \mu_k \grad F_{{\cal S}_k}(\bftheta_k) \right) = \mu_k^2 {\rm Var}\left( \grad F_{{\cal S}_k}(\bftheta_k) \right)
+	$$
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Improvements of SGD: Momentum}
+
+Idea: Accelerate convergence by keeping gradient informations from previous batches.
+
+
+\begin{eqnarray*}
+&& \bfS_{k+1} = \gamma \bfS_k  +\mu_k  \grad F_{{\cal S}_k}(\bftheta_k) \\
+&& \bftheta_{k+1} = \bftheta_k  - \bfS_{k+1}
+\end{eqnarray*}
+$\mu_k$ - learning rate, $\gamma$ - momentum 
+
+
+\bigskip
+\pause
+
+Hard to choose in practice, heuristic
+
+$\gamma$ - Start with $0.5$ and increase slowly to 0.9
+
+$\mu$ - problem dependent start small and decrease after a few epoch
+
+
+\end{frame}
+
+\begin{frame}\frametitle{Improvements of SGD: Nesterov}
+
+	Idea: Predict next iterate using momentum, correct next step using gradient there.
+	
+	\begin{eqnarray*}
+	&& \bftheta_{k+\frac 12} = \bftheta_k  - \gamma \bfS_{k} \\
+	&& \bfS_{k+1} = \gamma \bfS_k  + \mu_k  \grad F_{{\cal S}_k}({\bftheta_{k+\frac12}}) \\
+	&& \bftheta_{k+1} = \bftheta_k  - \bfS_{k+1}
+	\end{eqnarray*}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Improvements of SGD: AdaGrad}
+	
+	Idea: Scale step according to size of weights (relation to prior-conditioning in SGD)
+	
+	\bigskip
+	
+	
+	Iteration:
+	\begin{eqnarray*}
+	&& \bfD_{k+1} = \bftheta_k^2 + \bfD_k \\
+	&& \bfS_{k+1} =  \mu_k {\rm diag}(\bfD_{k+1})^{-1} \grad F_{{\cal S}_k}(\bftheta_{k}) \\
+	&& \bftheta_{k+1} = \bftheta_k  - \bfS_{k+1}
+	\end{eqnarray*}
+	
+	
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Theory and Final Comments}
+
+General Comments:
+\begin{itemize}
+\item 
+Lots of theory for convex problems
+\item
+Recall: SGD is not the best tool for most convex problems (see example of least-squares)
+\item
+Require very careful tuning
+\end{itemize}
+
+\bigskip
+
+SGD in deep learning:
+\begin{itemize}
+	\item currently the main workhorse (DNN $\leadsto$ nonconvex optimization)
+	\item why it works? mostly open but some relation to Langevin flow (we also have a few ideas)
+	\item observed to regularize problems (theory for quadratic case)
+	\item potentially possible to prove global optimality?
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Coding: Using SGD for Classification Problem}
+	
+	Outline:
+	\begin{itemize}
+		\item Use single layer or ResNet example
+		\item Change objective function to accept index set $S_k$
+		\item Use small minibatch
+		\item Test using peaks example
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+\end{frame}
+
+\end{document}

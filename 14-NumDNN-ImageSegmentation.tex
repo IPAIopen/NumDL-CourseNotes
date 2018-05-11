@@ -1,0 +1,94 @@
+\documentclass[12pt,fleqn]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+\date{}
+
+\title{Application of CNN - Image segmentation}
+\subtitle{Numerical Methods for Deep Learning}
+
+\begin{document}
+
+\makebeamertitle
+
+
+\begin{frame}[fragile]\frametitle{Image Segmentation}
+
+The problem:
+Given an image $\bfY:R^2 \rightarrow R$
+compute probability maps for $n_c$ classes, i.e., for $j=1,\ldots,n_c$
+$$\bfP_j:R^2 \rightarrow [0,1], \quad \sum_{j=1}^{n_c} \bfP_j = 1$$
+
+\begin{tabular}{cc}
+\includegraphics[width=5cm]{camvidPic} &
+\includegraphics[width=5cm]{camvidClass}
+\end{tabular} 
+
+
+$\bfP_j$ is the probability of a pixel to belong to class $j$ 
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Setup of Image Segmentation Problem}
+
+
+\begin{itemize}
+\item Use a neural network: original image  $\rightarrow n_c$ ``images''
+\item Output image represents class probabilities for each pixel
+\item Loss: average cross entropy for \textbf{each pixel}
+\item Optimize over network parameters
+\end{itemize}
+
+\bigskip
+
+Simple example: a single layer and linear classification
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Image Segmentation with Single-Layer NN}
+
+Let $\bfY_0 \in \R^{n\times n_f}$ with $n_f = n_1 \cdot n_2 \cdot 3$ ($n_1\times n_2$ RGB data)
+
+$$ \bfY_1 = \sigma(\bfY_0 \bfK(\theta) + \bfB \bfb). $$
+
+Use 2D convolutions for $\bfK(\theta)$ and assume $k$ output channels, i.e.,
+$$ \bfK = \begin{pmatrix}
+\bfK_{2D}(\theta_{11}) & \bfK_{2D}(\theta_{12}) & \cdots & \bfK_{2D}(\theta_{1k}) \\
+\bfK_{2D}(\theta_{21}) & \bfK_{2D}(\theta_{22}) & \cdots & \bfK_{2D}(\theta_{2k}) \\
+\bfK_{2D}(\theta_{31}) & \bfK_{2D}(\theta_{32}) & \cdots & \bfK_{2D}(\theta_{3k}) \\
+\end{pmatrix}. $$
+
+Then we have to classify each pixel in $\bfY_1$ using $\bfW \in \R^{k \times n_c}$. This gives the problem
+$$
+\min_{\bfW,\bfK,\bfb} E({\rm reshape}(\bfY_1) \bfW , \bfP), \qquad \bfY_1 =\sigma(\bfY_0 \bfK(\theta) + \bfB \bfb)
+$$
+Here ${\rm reshape}(\bfY_1) \in \R^{(n\cdot n_1 \cdot n_2) \times k}$ and $E$ is our cross entropy
+
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

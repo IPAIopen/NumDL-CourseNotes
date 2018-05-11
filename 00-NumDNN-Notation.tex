@@ -1,0 +1,160 @@
+\documentclass[12pt,fleqn]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+
+\title[Notations]{Notation}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+
+\begin{document}
+
+
+%% ------------------------------------------------------------
+%% ------------------------------------------------------------
+%% ------------------------------------------------------------
+\makebeamertitle
+
+\begin{frame}
+	\frametitle{Data}
+	
+	\begin{itemize}
+		\item $n$ - number of examples
+		\item $n_f$ - dimension of feature vector
+		\item $n_c$ - dimension of prediction (e.g., number of classes)
+		\item $\bfy_1,\bfy_2,\ldots,\bfy_n \in\R^{n_f}$ - input features
+		\item $\bfY = \left[\bfy_1,\bfy_2,\ldots,\bfy_n \right] \in \R^{n_f \times n}$ - feature matrix
+		\item $\bfc_1,\bfc_,\ldots,\bfc_n \in \R^{n_c}$ - output observations 
+		\item $\bfC = \left[\bfc_1, \bfc_2,\ldots,\bfc_n\right] \in \R^{n_c \times n}$ - observation matrix
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Neural Networks}
+	
+	\begin{itemize}
+		\item $f(\bfy,\theta) = \bfc$ - model represented by neural net
+		\item $\theta \in \R^{n_p}$ - parameters of model
+		\item $\theta^{(1)}, \theta^{(2)}, \ldots$ - parts of weights. Clear from context
+		
+		Example: $\theta^{(j)}$ are weights of $j$th layer.
+		\item $N$ - number of layers
+		\item $\bfK$ - linear operator applied to features
+		\item $b$    - bias
+		\item $\sigma : \R\to\R$ - activation function
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Optimization and Loss}
+	
+	\begin{itemize}
+		\item $E(\bfY,\bfC,\bfW)$ - loss function parameterized by weights $\bfW$
+		\item $\phi : \R^{k} \to \R$ - generic objective function
+		\item $\theta^*$ - minimizer of a function, i.e.,
+		$$
+			\theta^* = \argmin_{\theta} \phi(\theta)
+		$$
+		\item $\theta_1,\theta_2, \ldots$ - iterates
+		\item $\bfd, \bfD$ - search directions
+		\item $\alpha$ - step size
+		\item $\lambda$ - regularization parameter
+		\item $\nabla_\bfx F$ - gradient, if $ F : \R^k \to \R^l $, then $\nabla F(\bfx) \in \R^{k\times l}$.
+		\item $\bfJ_\bfx F$ - Jacobian of $F$ with respect to $\bfx$, $\bfJ_{\bfx} F = (\nabla_\bfx F)^\top$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Linear Algebra - 1}
+	\begin{itemize}
+		\item $\bfe_k$ - vector of all length and length $k$.
+		\item $\bfI_k$ - $k\times k$ identity matrix
+		\item $\kappa(\bfA)$ - condition number of $\bfA$
+		\item $\sigma_1(\bfA)\geq\ldots\geq\sigma_k(\bfA)\geq 0$ - singular values of $\bfA$
+		\item $\lambda_1(\bfA),\ldots$ - eigenvalues of $\bfA$
+		\item ${\rm tr}(\bfA)$ - trace of square matrix, i.e., sum of diagonal elements
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Linear Algebra - 2}
+	\begin{itemize}
+		\item $\odot$ - Hadamard product
+		$$
+			\bfC_{ij} = \bfA_{ij} \cdot \bfB_{ij}, \quad for \bfB,\bfA \in \R^{k\times l}
+		$$
+		MATLAB: $\texttt{C = A.*B}$
+		\item $\otimes$ - Kronecker product
+		$$
+			\bfA \otimes \bfB = \left(
+				\begin{array}{rrrrr}
+					\bfA_{11} \bfB & \bfA_{12} \bfB & \dots & \bfA_{1l} \bfB \\
+					\vdots         & \vdots         & \vdots& \vdots\\
+					\bfA_{21} \bfB & \bfA_{22} \bfB & \dots & \bfA_{1l} \bfB \\
+				\end{array}
+			\right)
+		$$
+		MATLAB: \texttt{C = kron(A,B)}
+		\item ${\rm vec}(\bfA)$ - reshape matrix $\bfA$ into vector (column-wise). 
+		$$
+		\text{Example:}\quad
+			{\rm vec}\left(
+				\left(
+					\begin{array}{rr}
+						\bfA_{11} & \bfA_{12} \\
+						\bfA_{21} & \bfA_{22} 
+					\end{array}
+				\right)
+			\right) = \left( 
+				\begin{array}{r}
+					\bfA_{11}\\
+					\bfA_{21} \\
+					\bfA_{12}\\
+					\bfA_{22}
+				\end{array}
+			\right)
+		$$
+		MATLAB: $\texttt{a = A(:)}$
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Linear Algebra - 3}
+	\begin{itemize}
+		\item ${\rm mat}(\bfv,k,l)$ - reshape vector $\bfv\in\R^{kl}$ into matrix. $k,l$ omitted when dimension clear from context. Note
+		$$
+			{\rm mat}({\rm vec} (\bfA)) = \bfA.
+		$$
+		MATLAB: \texttt{V = reshape(v,k,l)}.
+	
+		\item ${\rm diag}(\bfv)$ - diagonal matrix with elements of $\bfv \in \R^k$ on diagonal.
+		
+		MATLAB: \texttt{V = diag(v(:))}
+		
+		\item ${\rm diag}(\bfA)$ - diagonal matrix obtained by vectorizing $\bfA$
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Acronyms}
+	\begin{itemize}
+		\item CG - Conjugate Gradient Method
+		\item VarPro - Variable Projection
+		\item SD - Steepest Descent
+		\item SGD - Stochastic Gradient Descent
+		\item SA  - Stochastic Approximation
+		\item SAA - Stochastic Average Approximation
+		\item SPD - symmetric positive definite
+		\item SPSD - symmetric positive semi-definite
+		\item CV - Cross Validation
+	\end{itemize}
+\end{frame}
+\end{document}
+
+
+
+
+
+

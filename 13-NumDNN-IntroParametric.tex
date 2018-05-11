@@ -1,0 +1,546 @@
+\documentclass[12pt,fleqn,handout]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+\title{Parametric Models}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+\begin{document}
+
+\makebeamertitle
+
+\section{Parametric Models} % (fold)
+\label{sec:parametric_models}
+\begin{frame}[fragile]\frametitle{Motivation}
+
+Recall single layer
+$$
+	\bfZ = \sigma(\bfK\bfY + b),
+$$
+where $\bfY \in \R^{n_f\times n}, \bfK \in \R^{m \times n_f}, b\in\R$, and $\sigma$ element-wise activation. 
+
+\bigskip
+\pause
+
+We saw that $m \gg n_f$ needed to fit training data. 
+
+Conservative example: Consider MNIST ($n_f = 28^2$) and use $m=n_f$ $\leadsto 614,656$ unknowns for a single layer. \pause Famous quote:
+
+\begin{quote}
+	With four parameters I can fit an elephant, and with five I can make him wiggle his trunk.
+\end{quote}
+
+\bigskip
+\pause
+
+Possible remedies:
+\begin{itemize}
+	\item \textbf{Regularization:} penalize $\bfK$ 
+	\item \textbf{Parametric model:} $\bfK(\theta)$ where $\theta\in\R^p$ with $p\ll m\cdot n_f$.
+\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{Some Simple Parametric Models}
+	
+	\begin{itemize}
+		\item Diagonal scaling:
+		$$
+			\bfK(\theta) = {\rm diag}(\theta) \in \R^{n_f\times n_f}
+		$$
+		Advantage: preserves size and structure of data.
+		\pause
+		\item Antisymmetric kernel
+		$$
+			\bfK(\theta) = \left(
+				\begin{array}{rrr}
+					0 & \theta_1 & \theta_2 \\
+					-\theta_1 & 0 & \theta_3 \\
+					-\theta_2 & -\theta_3 & 0
+				\end{array}
+			\right)
+		$$
+		Advantage?: ${\rm real}(\lambda_i(\bfK(\theta))) = 0$. 
+		\pause
+		\item $M$-matrix
+		$$
+		\bfK(\theta) = \left(
+				\begin{array}{rrr}
+					\theta_1+\theta_2 & -\theta_1 & -\theta_2 \\
+					-\theta_3 & \theta_3 + \theta_4 & -\theta_4 \\
+					-\theta_5 & -\theta_6 & \theta_5+\theta_6
+				\end{array}
+			\right)
+			\quad \theta \geq 0
+		$$
+		Advantage: like differential operator
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Differentiating Parametric Models}
+	Need derivatives of model to optimize $\theta$ in
+	$$
+		E(\bfW \sigma(\bfK(\theta)\bfY+b),\bfC) 
+	$$
+	(we can re-use previous derivatives and use chain rule)
+	
+	\bigskip
+	\pause
+	
+	Note that all previous models are linear in the following sense
+	$$
+		\bfK(\theta) = {\rm mat}(\bfQ\, \theta)
+	$$
+	
+	\bigskip
+	\pause
+	
+	Therefore, matrix-vector products with the Jacobian simply are
+	$$
+		\bfJ_\theta (\bfK(\theta)) \bfv  = {\rm mat}(\bfQ \ \bfv)\quad\text{ and }\quad
+		\bfJ_\theta (\bfK(\theta))^\top \bfw  = \bfQ^\top \bfw
+	$$
+	where $\bfv \in \R^p$ and $\bfw \in \R^m$.
+\end{frame}
+
+\begin{frame}\frametitle{Example: Derivative of M-matrix}
+	$$
+	\bfK(\theta) = \left(
+			\begin{array}{rrr}
+				\theta_1+\theta_2 & -\theta_1 & -\theta_2 \\
+				-\theta_3 & \theta_3 + \theta_4 & -\theta_4 \\
+				-\theta_5 & -\theta_6 & \theta_5+\theta_6
+			\end{array}
+		\right)
+		\quad \theta \geq 0
+	$$
+	\pause
+	verify that this can be written as $K(\theta) = {\rm mat}(\bfQ \, \theta)$ where
+	$$
+		\bfQ = \left(
+			\begin{array}{rrrrrr}
+				1 & 1 & 0 & 0 & 0 & 0 \\
+				0 & 0 & -1& 0 & 0 & 0 \\
+				0 & 0 & 0 & 0 &-1 & 0 \\
+				-1& 0 & 0 & 0 & 0 & 0 \\
+				0 & 0 & 1 & 1 & 0 & 0 \\
+				0 & 0 & 0 & 0 & 0 &-1 \\
+				0 &-1 & 0 & 0 & 0 & 0 \\
+				0 & 0 & 0 & -1& 0 & 0 \\
+				0 & 0 & 0 & 0 & 1 & 1
+			\end{array}
+		\right) \in \R^{9\times 6}
+	$$
+	\begin{center}
+		Note: not efficient to construct $\bfQ$ when $p$ large but helpful when computing derivatives
+	\end{center}
+\end{frame}
+% section parametric_models (end)
+
+\section{Convolutional Neural Networks (CNNs)} % (fold)
+\label{sec:convolutional_neural_networks}
+
+\begin{frame}\frametitle{Convolutional Neural Networks~\cite{LeCun1990}}
+	\begin{center}
+		\begin{tikzpicture}
+			\node at (-3,0){\includegraphics[width=4cm]{E13Conv2D-Y}};
+			\node at (0.3,0){\includegraphics[width=1cm]{E13Conv2D-theta}};
+			\node at (3,0){\includegraphics[width=4cm]{E13Conv2D-Z}};
+			\node at (-2.3,+2.1){\small $\bfy \in \R^{28\times28}$ input features};
+			\node at (0,-2.2){\small \textcolor{red}{$\theta\in\R^{5\times 5}$ convolution kernel}};
+			\node at (+2.4,+2.1){\small$\bfz\in\R^{28\times 28}$ output features};
+			\draw[->,red,thick] (0.3,-.5 ) edge (0.3,-2);
+		\end{tikzpicture}
+	\end{center}
+	\begin{itemize}
+		\item useful for speech, images, videos, \ldots
+		\item efficient parameterization, efficient codes (GPUs, \ldots)
+		\item now: CNNs as parametric model and PDEs, simple code
+		\item see \texttt{E13Conv2D.m}
+	\end{itemize}
+
+\end{frame}
+
+\begin{frame}\frametitle{Convolutions in 1D}
+	Let $y, z, \theta:\R \to \R$, $z : \R\to\R$ be continuous functions then
+	\begin{equation*}
+		z(x) = (\theta * y)(x) = \int_{-\infty}^\infty \theta(x-t) y(t) dt.
+	\end{equation*}
+	Assume $\theta(x) \neq 0$ only in interval $[-a,a]$ (compact support).
+	
+	\bigskip
+	\pause
+	
+	A few properties
+	\begin{itemize}
+	\item $ \theta * y = {\cal F}^{-1}(({\cal F} \theta) ({\cal F} y))$, ${\cal F}$ is Fourier transform
+	\item $ \theta * y =  y * \theta$ 
+	\end{itemize}
+	
+	
+\end{frame}	
+
+\begin{frame}\frametitle{Discrete Convolutions in 1D}
+	Let $\theta \in\R^{2k+1}$ be stencil, $\bfy \in \R^{n_f}$ grid function
+\begin{equation*}
+		\bfz_i = (\theta * \bfy)_i = \sum_{j=-k}^k \theta_{j} \bfy_{i-1}.
+	\end{equation*}
+	
+	\bigskip
+	\pause
+
+	 Example: Discretize $\theta \in \R^3$ (non-zeros only), $\bfy,\bfz \in \R^4$ on regular grid
+	 \begin{align*}
+	 	\bfz_1 & = \theta_3 \textcolor{red}{\bfw_1} + \theta_2 \bfx_1 + \bftheta_1 \bfx_2 \\
+	 	\bfz_2 & = \theta_3 \bfx_1 + \theta_2 \bfx_2 + \bftheta_1 \bfx_3 \\
+	 	\bfz_3 & = \theta_3 \bfx_2 + \theta_2 \bfx_3 + \bftheta_1 \bfx_4 \\
+	 	\bfz_4 & = \theta_3 \bfx_3 + \theta_2 \bfx_4 + \bftheta_1 \textcolor{red}{\bfw_2}
+	 \end{align*}
+	 where $\textcolor{red}{\bfw_1, \bfw_2}$ are used to implement different boundary conditions (right choice? depends \ldots).
+\end{frame}
+
+\begin{frame}
+	\frametitle{Structured Matrices - 1}
+	$$
+		\left( 
+		\begin{array}{r}
+			\bfz_1\\
+			\bfz_2\\
+			\bfz_3\\
+			\bfz_4
+		\end{array}
+		\right)
+		=
+		\left( 
+		\begin{array}{rrrrrrr}
+			\theta_3 & \theta_2 & \theta_1 &          &          &           \\
+			         & \theta_3 & \theta_2 & \theta_1 &          &           \\
+			         &          & \theta_3 & \theta_2 & \theta_1 &           \\
+			         &          &          & \theta_3 & \theta_2 & \theta_1 \\
+		\end{array}
+		\right)
+		\left( 
+		\begin{array}{r}
+			\bfw_1\\
+			\bfx_1\\
+			\bfx_2\\
+			\bfx_3\\
+			\bfx_4\\
+			\bfw_2
+		\end{array}
+		\right)
+	$$
+	Different boundary conditions lead to different structures
+	\pause
+	\begin{itemize}
+		\item Zero boundary conditions: $\bfw_1 = \bfw_2 = 0$
+	$$
+		\left( 
+		\begin{array}{r}
+			\bfz_1\\
+			\bfz_2\\
+			\bfz_3\\
+			\bfz_4
+		\end{array}
+		\right)
+		=
+		\left( 
+		\begin{array}{rrrrr}
+			\theta_2 & \theta_1 &          &           \\
+			\theta_3 & \theta_2 & \theta_1 &           \\
+			         & \theta_3 & \theta_2 & \theta_1  \\
+			         &          & \theta_3 & \theta_2 \\
+		\end{array}
+		\right)
+		\left( 
+		\begin{array}{r}
+			\bfx_1\\
+			\bfx_2\\
+			\bfx_3\\
+			\bfx_4\\
+		\end{array}
+		\right)
+	$$		
+	This is a \emph{Toeplitz matrix} (constant along diagonals).
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Structured Matrices - 2}
+	\begin{itemize}
+		\item Periodic boundary conditions: $\bfw_1 = \bfx_4$ and $\bfw_2 = \bfx_1$
+	$$
+		\left( 
+		\begin{array}{r}
+			\bfz_1\\
+			\bfz_2\\
+			\bfz_3\\
+			\bfz_4
+		\end{array}
+		\right)
+		=
+		\left( 
+		\begin{array}{rrrr}
+			        \theta_2 & \theta_1 &          & \theta_3  \\
+			        \theta_3 & \theta_2 & \theta_1 &           \\
+			                 & \theta_3 & \theta_2 & \theta_1  \\
+			        \theta_1 &          & \theta_3 & \theta_2  \\
+		\end{array}
+		\right)
+		\left( 
+		\begin{array}{r}
+			\bfx_1\\
+			\bfx_2\\
+			\bfx_3\\
+			\bfx_4\\
+		\end{array}
+		\right)
+	$$
+	this is a \emph{circulant matrix} (each row/column is periodic shift of previous row/column)
+	\end{itemize}
+	\pause
+	
+	An attractive property of a cirulant matrix is that we can efficiently compute its eigendecomposition
+	$$
+		\bfK(\theta) = \bfF^* {\rm diag}(\lambda) \bfF
+	$$ 
+	where $\bfF$ is the discrete Fourier transform and the eigenvalues, $\lambda \in {\mathbb{C}}^4$, can be computed using first column
+	$$
+		\lambda =   \bfF( \bfK(\theta) \bfu_1) \quad \text{ where} \quad \bfu_1 = (1,0,0,0)^\top.
+	$$ 	
+\end{frame}
+
+\begin{frame}\frametitle{Coding: 1D Convolution using FFTs}
+	Let $\theta \in \R^3$ be some stencil and $n_f = m = 16$ 
+\begin{enumerate}
+	\item build a sparse matrix $\bfK$ for computing the convolution with periodic boundary conditions. 
+	Hint: \texttt{spdiags}
+	
+	\item compute the eigenvalues of $\bfK$ using \texttt{eig(full(K))} and using $\texttt{fft}$ and first column of $\bfK$. Compare!
+	
+	\item verify that \texttt{norm(K*y - real(ifft(lam.*fft(y))))} is small.
+	
+	\item repeat previous item for transpose.
+	
+	\item write code that computes eigenvalues for arbitrary stencil size without building $\bfK$. Hint: \texttt{circshift}
+\end{enumerate}
+\end{frame}
+
+\begin{frame}\frametitle{Derivatives of 1D Convolution - 1}
+	Recall that we need a way to compute
+	$$
+		\bfJ_\theta (\bfK(\theta)\bfY) \bfv \quad \text{ and } \quad \bfJ_\theta (\bfK(\theta)\bfY)^\top \bfw, \quad (\bfJ_\theta \in\R^{m \times p})
+	$$
+	(note that we put $\bfY$ inside the bracket to avoid tensors)
+
+	\bigskip
+	\pause
+	
+	Assume single example, $\bfy$. Since we have periodic boundary conditions
+	\begin{equation*}
+		\begin{split}
+	   \bfK(\theta)\bfy & =  {\rm real}(\bfF^*( \lambda(\theta) \odot \bfF \bfy)) \\
+	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \lambda(\theta)), \quad 		\lambda(\theta) = \bfF(\bfK(\theta)\bfu_1).
+		\end{split}
+	\end{equation*}
+	\pause
+	
+	Need to differentiate eigenvalues w.r.t. $\theta$. Note linearity
+	$$
+		\bfK(\theta) \bfu_1 = \bfQ \theta, \quad \bfQ = ?
+	$$
+	
+\end{frame}
+
+\begin{frame} \frametitle{Derivatives of 1D Convolution - 2}
+	Assume we have
+	$$
+		\bfK(\theta) \bfy  = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bfF \bfQ \theta))
+	$$
+	Then mat-vecs with Jacobian are easy to compute
+	$$
+		\bfJ_\theta ( \bfK(\theta) \bfy) \bfv = {\rm real}( \bfF^* ({\rm diag}(\bfF \bfy)  \bfF \bfQ \bfv))
+	$$
+	\pause
+	and (note that $\bfF^\top = \bfF$ and $(\bfF^*)^\top = \bfF^*$)
+	$$
+		\bfJ_\theta (\bfK(\theta) \bfy)^\top \bfw = {\rm real}(\bfQ^\top \bfF  {\rm diag}(\bfF \bfy)\bfF^* \bfw)
+	$$
+	
+	\bigskip
+	\pause
+	
+	\begin{center}
+		\textcolor{red}{Code this and check Jacobian and its transpose using \texttt{conv1D.m}!}
+	\end{center}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Extension 1: Many Examples}
+	
+	Let $n>1$. In MATLAB must avoid for-loop over examples. 
+	$$
+		\bfK(\theta)\bfY =  {\rm real}(\bfF^* {\rm diag}(\lambda(\theta)) \bfF \bfY)
+	$$
+	$$
+		 \bfK(\theta)^\top\bfZ =  {\rm real}(\bfF {\rm diag}(\lambda(\theta)) \bfF^* \bfZ)
+	$$
+	These require almost no change to the code. For the Jacobians, we need to re-order slightly and get
+	$$
+		\bfJ_\theta (\bfK(\theta)\bfY) = {\rm real}(\bfF^* {\rm diag}(\bfF \bfQ v) \bfF \bfY)
+	$$
+	and for the transpose we need to sum over examples
+	$$
+		\bfJ_\theta(\bfK(\theta)\bfY)^\top\bfW = {\rm real}(\bfQ^\top \bfF  ((\bfF\bfY) \odot (\bfF^* \bfW) \bfe_n))
+	$$
+	
+\end{frame}
+
+\begin{frame}\frametitle{Extension 2: 2D Convolution}
+	Example: Let $\bfy,\bfz,\theta \in \R^{3\times 3}$ and assume periodic BCs then
+	\begin{align*}
+			\bfz_{21}   & = \theta_{33} \bfy_{13} + \theta_{32} \bfy_{11}+ \theta_{31} \bfy_{12} \\
+				   	    & + \theta_{23}\bfy_{23} + \theta_{22} \bfy_{21} + \theta_{21} \bfy_{22}\\
+				   	    & + \theta_{13}\bfy_{33} + \theta_{12} \bfy_{31} + \theta_{11} \bfy_{32}
+	\end{align*}
+	\pause
+	In matrix form, this gives
+	\footnotesize
+	$$
+		\left(
+			\begin{array}{r}
+				\invisible<beamer|-2>{\bfz_{11}}\\
+				\bfz_{21}\\
+				\invisible<beamer|-2>{\bfz_{31}\\
+				\bfz_{12}\\
+				\bfz_{22}\\
+				\bfz_{32}\\
+				\bfz_{13}\\
+				\bfz_{23}\\
+				\bfz_{33}	}			
+			\end{array}
+		\right)
+		= 
+		\left(
+			\begin{array}{rrr|rrr|rrr}
+				\invisible<beamer|-2>{\theta_{22} & \theta_{12} & \theta_{32} & \theta_{21} & \theta_{11} & \theta_{31} & \theta_{23} & \theta_{13} & \theta_{33}\\}
+				\theta_{32} & \theta_{22} & \theta_{12} & \theta_{31} & \theta_{21} & \theta_{11} & \theta_{33} & \theta_{23} & \theta_{13}\\
+				\invisible<beamer|-2>{\theta_{12} & \theta_{32} & \theta_{22} & \theta_{11} & \theta_{31} & \theta_{21} & \theta_{13} & \theta_{33} & \theta_{23}\\ \hline
+				\theta_{23} & \theta_{13} & \theta_{33} & \theta_{22} & \theta_{12} & \theta_{32}  & \theta_{21} & \theta_{11} & \theta_{31}\\
+				\theta_{33} & \theta_{23} & \theta_{13} & \theta_{32} & \theta_{22} & \theta_{12}  & \theta_{31} & \theta_{21} & \theta_{11}\\
+				\theta_{13} & \theta_{33} & \theta_{23} & \theta_{12} & \theta_{32} & \theta_{22}  & \theta_{11} & \theta_{31} & \theta_{21}\\ \hline
+				\theta_{21} & \theta_{11} & \theta_{31} & \theta_{23} & \theta_{13} & \theta_{33}  & \theta_{22} & \theta_{12} & \theta_{32}\\
+				\theta_{31} & \theta_{21} & \theta_{11} & \theta_{33} & \theta_{23} & \theta_{13}  & \theta_{32} & \theta_{22} & \theta_{12}\\
+				\theta_{11} & \theta_{31} & \theta_{21} & \theta_{13} & \theta_{33} & \theta_{23}  & \theta_{12} & \theta_{32} & \theta_{22}}\\ 			\end{array}
+		\right)
+		\left(
+			\begin{array}{r}
+				\bfy_{11}\\
+				\bfy_{21}\\
+				\bfy_{31}\\
+				\bfy_{12}\\
+				\bfy_{22}\\
+				\bfy_{32}\\
+				\bfy_{13}\\
+				\bfy_{23}\\
+				\bfy_{33}				
+			\end{array}
+		\right)
+	$$
+	good news: this matrix is BCCB (block circulant with circulant blocks)
+	\only<beamer|3>{}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Extension 2: 2D Convolution using FFTs}	
+	Since the 2D convolution operator is BCCB, we still have that
+	\begin{equation*}
+		\bfK(\theta) = \bfF^* {\rm diag}(\lambda(\theta)) \bfF, \quad \lambda(\theta) = \bfF(\bfK(\theta)\bfu_1).
+	\end{equation*}
+	Differences:
+	\begin{itemize}
+		\item $\bfF$ and $\bfF^*$ now refer to 2D Fourier transform and its inverse (\texttt{ffft2} and \texttt{ifft2}), respectively. 
+		
+		\item need to find an efficient way to build first column of $\bfK(\theta)$ and encode that using $\bfQ$.
+	\end{itemize}
+	
+	All else stays the same and extends also to higher dimensions (like for videos).
+	
+	For more details on convolutions and structured matrices see~\cite{HansenNagyOLeary2006}
+\end{frame}
+
+\begin{frame}\frametitle{Extension 3: Width of CNNs}
+	
+	\begin{center}
+		\begin{tabular}{ccc}
+			RGB image & input channels & output channels\\ 
+			\includegraphics[width=1.8cm]{stl-monkey-1}
+			&
+			\includegraphics[width=3.6cm]{stl-monkey-2}
+			&
+			\includegraphics[width=3.6cm]{stl-monkey-3}
+		\end{tabular}
+	\end{center}
+	
+	Width of CNN can be controlled by number of input and output channels of each layer. Let $\bfy = (\bfy_R, \bfy_G, \bfy_B)$, then we might compute
+	$$
+		\left(
+			\begin{array}{r}
+				\bfz_1 \\
+				\bfz_2 \\
+				\bfz_3 \\
+				\bfz_4
+			\end{array}
+		\right)
+		= 
+		\left(
+		\begin{array}{rrr}
+			\bfK^{11}(\theta^{11}) &  \bfK^{12}(\theta^{12}) & \bfK^{11}(\theta^{13})\\
+			\bfK^{21}(\theta^{21}) &  \bfK^{22}(\theta^{22}) & \bfK^{21}(\theta^{23})\\
+			\bfK^{31}(\theta^{31}) &  \bfK^{32}(\theta^{32}) & \bfK^{31}(\theta^{33})\\
+			\bfK^{41}(\theta^{41}) &  \bfK^{42}(\theta^{42}) & \bfK^{41}(\theta^{43})\\
+		\end{array}
+		\right)
+		\left(
+			\begin{array}{r}
+				\bfy_R \\
+				\bfy_G \\
+				\bfy_B 
+			\end{array}
+		\right),
+	$$
+	where $\bfK^{ij}$ is a 2D convolution operator with stencil $\theta^{ij}$
+	
+\end{frame}
+
+\begin{frame}\frametitle{Outlook: Possible Extensions}
+	For now, we just introduced the very basic convolution layer. 
+	
+	CNNs used in practice also use the following components 
+	\begin{itemize}
+		\item \emph{pooling:} reduce image resolution (e.g.  average over patches)
+		\item \emph{stride:} Example: stride of two reduces image resolution by computing $\bfz$ only at every other pixel. 
+	\end{itemize}
+	
+	\bigskip
+	
+	Build your own parametric model (ideas for projects)
+	\begin{itemize}
+		\item $M-$matrix for convolution
+		\item cheaper convolution models: separable kernels, doubly symmetric kernels
+		\item Wavelet, \ldots
+		\item other sparsity patterns
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+\end{frame}
+
+\end{document}

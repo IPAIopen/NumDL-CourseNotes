@@ -1,0 +1,236 @@
+\documentclass[12pt,fleqn,beamer]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+\title{Linear Models}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+
+\begin{document}
+
+\makebeamertitle
+
+
+\section{Least-Squares Regression} % (fold)
+\label{sec:least_squares_regression}
+\begin{frame}\frametitle{Classification and Least-Squares Regression}
+
+Given examples
+$$ \bfY = \begin{pmatrix}  \bfy_1 &  \bfy_2   & \cdots & & \bfy_n \end{pmatrix} \in\R^{n_f\times n}$$
+and labels
+$$ \bfC = \begin{pmatrix} & \bfc_1  &  \bfc_2  & \cdots &  \bfc_n \end{pmatrix} \in\R^{n_c\times n}$$
+Goal: Find a classification/prediction function $f(\cdot,\bftheta)$, i.e., 
+
+$$
+f(\bfy_j,\bftheta) \approx \bfc_j, \quad j=1,\ldots,n.
+$$
+
+\end{frame}
+
+\begin{frame}\frametitle{Regression and Least-Squares}
+
+Simplest option, a linear model with $\bftheta = (\bfW,\bfb)$ and
+$$ f(\bfY,\bfW,\bfb) =  \bfW \bfY + \bfb \bfe_n^\top \approx \bfC $$
+\begin{itemize}
+	\item $\bfW \in \R^{n_c \times n_f}$ are \emph{weights}
+	\item $\bfb \in \R^{n_c}$ are \emph{biases}
+	\item $\bfe_n \in \R{^n}$ is a vector of ones
+\end{itemize} 
+Equivalent notation:
+$$f(\bfY,\bfW,\bfb) = \begin{pmatrix} \bfW & \bfb^\top \end{pmatrix} \begin{pmatrix} \bfY \\ \bfe_n^\top \end{pmatrix} \approx \bfC$$
+
+Problem may not have a solution, or may have infinite solutions (when?).
+Solve through optimization
+ 
+$$ \min_{\bfW} \hf \|\bfW \bfY - \bfC\|^2_F $$
+
+(Frobenius norm: $\|\bfA\|_F^2 = {\rm trace}(\bfA^{\top} \bfA) = \sum_{i,j} \bfA_{i,j}^2. $)
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Remark: Relation to Least-Squares}
+	
+	Consider the regression problem
+	$$ \min_{\bfW} \hf \|\bfW \bfY - \bfC\|^2_F. $$
+	
+	It is easy to see that this is equivalent to
+	$$ \min_{\bfW} \hf \| \bfY^\top \bfW^\top - \bfC^\top\|^2_F, $$
+	
+	which can be solved separately for each row in $\bfW$
+	$$
+	\bfW(j,:)^\top = \argmin_{\bfw} \hf \| \bfY^\top \bfw - \bfC(j,:)^\top\|^2_F.
+	$$
+	
+	Notation: Let $\bfA = \bfY^\top$ and $\bfX = \bfW^\top$ (easy to add bias here), we solve
+	$$
+		\min_\bfX \hf \| \bfA \bfX - \bfC^\top \|^2_F
+	$$
+		
+\end{frame}
+
+\begin{frame}\frametitle{Regression and Least-Squares}
+
+To minimize a function need to differentiate and equate to $0$
+
+$$ {\frac {\partial \left( \hf \|\bfA\bfX - \bfC^\top\|^2_F \right)}{\partial \bfX}} = 0 $$
+
+Compute the derivatives in three steps
+
+
+\begin{enumerate}
+\item $$ {\frac {\partial \left( \hf \|\bfR \|^2_F \right)}{\partial \bfR}} = ??? $$
+
+\item $$ {\frac {\partial \left( \bfA \bfX \right)}{\partial \bfX}} = ??? $$
+
+\item Use chain rule
+
+\end{enumerate}
+
+
+\end{frame}
+
+\begin{frame}\frametitle{Regression and Least-Squares}
+
+Putting it all together gives
+$$ {\frac {\partial \left( \hf \|\bfA\bfX - \bfC^\top\|^2_F \right)}{\partial \bfX}} = 
+\bfA^\top(\bfA \bfX - \bfC^\top)=0 $$
+
+Reorganize to obtain the {\bf normal equations}
+
+$$ \bfX =  (\bfA^\top \bfA)^{-1}(\bfA^\top \bfC^\top). $$
+
+Here, $\bfA^\top \bfA \in \R^{n_f \times n_f}$ must be invertible, i.e., 
+\begin{itemize}
+\item sufficient amount of data $(n>n_f)$
+\item data is linearly independent
+\end{itemize}
+
+\end{frame}
+
+
+\section{Coding} % (fold)
+\label{sec:coding}
+\begin{frame}
+	\frametitle{Coding: Least-Squares Regression}
+	
+	\begin{enumerate}
+		\item Write a code for solving
+		$$
+		\min_{\bfW,\bfb} \hf\| \bfW\bfY + \bfb \bfe_n^\top - \bfC \|^2
+		$$
+		and apply it to some of our test data (MNIST / CIFAR10)
+		
+		\item Solve the problem using the normal equations derived above.
+		
+		\item Use optimal weights to predict labels for test data. How well can you do?
+		
+	\end{enumerate}
+	
+	\bigskip
+	
+\end{frame}
+% section coding (end)
+
+\section{Bias Variance} % (fold)
+\label{sec:bias_variance}
+
+\begin{frame}\frametitle{Ill-posedness and Regularization - 1}
+
+If the data is linearly dependent or close to be linearly dependent, least-squares problem gives no good solution~\cite{Hansen1998,Vogel2002,Hansen2010}.
+
+Understanding can be gained by the Singular Value Decomposition (SVD) (e.g.,~\cite[Ch. 8]{AscherGreif2011})
+
+$$ \bfA = \bfU \bfSigma \bfV^{\top} $$
+
+where $\bfU \in \R^{n_f\times n_f}, \bfV\in\R^{n_f \times n}$ satisfy
+$$  \bfU^{\top} \bfU = \bfI, \quad \text{ and } \quad \bfV^{\top} \bfV = \bfI $$
+Diagonal of $\bfSigma$ contains the singular values $\sigma_1 \geq ... \sigma_{n_f} \geq 0 $
+$$ \bfSigma = \begin{pmatrix} \sigma_1  &  &  \\ &  \ddots &  \\ &  &  \sigma_{n_f} \end{pmatrix} $$
+
+\end{frame}
+
+\begin{frame}\frametitle{Ill-posedness and Regularization - 2}
+
+Important is the \emph{effective rank}: If $\sigma_j \ll \sigma_1$ for all
+$j\geq k$, then the effective rank of the problem is $k$.
+
+\bigskip
+
+If $k < n_f$, the least squares problem is ill-posed, i.e., solution does not exist or is unstable.
+
+Small perturbations
+in $\bfC$ or $\bfA=\bfY^\top$ yield large perturbations in $\bfX = \bfW^\top$
+
+\bigskip
+
+Solve regularized problem: For $\lambda>0$
+$$ \min_\bfX \hf \|\bfA\bfX - \bfC^\top\|_F^2 + {\frac {\lambda}2} \|\bfX\|_F^2 $$
+
+{
+{\em Exercise: solve the regularized least-squares problem}
+}
+\pause
+
+
+$$ \bfX = (\bfA^{\top} \bfA + \lambda \bfI)^{-1} \bfA^{\top} \bfC^\top $$
+\end{frame}
+
+\begin{frame}\frametitle{The Bias-Variance Decomposition}
+
+Assume $\bfC^\top = \bfA \bfX_{\rm true}  + \epsilon$, $\epsilon \sim\mathcal{N}(0,\sigma \bfI)$,  $\lambda>0$ fixed.
+
+Then setting  $\bfA^{\dag}_{\lambda} = (\bfA^{\top} \bfA + \lambda \bfI)^{-1}$
+\begin{align*}
+	\bfX - \bfX_{\rm true} & = \bfA^{\dag}_{\lambda} \bfA^{\top} \bfC^\top - \bfX_{\rm true} \\
+	                      & = \left(\bfA^{\dag}_{\lambda} \bfA^{\top} \bfA - \bfI \right)  \bfX_{\rm true} +
+	\bfA^{\dag}_{\lambda} \bfA^{\top} \epsilon \\
+	                     & = -\lambda \bfA^{\dag}_{\lambda}\bfX_{\rm true}+
+	\bfA^{\dag}_{\lambda} \bfA^{\top} \epsilon
+\end{align*}
+
+\pause
+
+Error depends on $\epsilon$ $\leadsto$ take expectation
+\begin{align*}
+ {\mathbb E} \|\bfX - \bfX_{\rm true}\|_F^2 &= {\mathbb E}
+\|\bfA^{\dag}_{\lambda} \bfA^{\top} \epsilon -\lambda \bfA^{\dag}_{\lambda}\bfX_{\rm true} \|_F^2   \\
+&=\overbrace{ \lambda^2 \|\bfA^{\dag}_{\lambda}\bfX_{\rm true}\|_F^2}^{\rm \|bias\|_F^2} +
+\overbrace{\sigma^2 {\rm trace}\left( \bfA \bfA^{\dag^T}_{\lambda} \bfA^{\dag}_{\lambda} \bfA^{\top} \right)}^{\rm variance}
+\end{align*}
+
+\pause
+\begin{center}
+	\textcolor{red}{Take home: No such thing as exact recovery!}	
+\end{center}
+
+
+\end{frame}
+
+
+\begin{frame}\frametitle{Next Time}
+
+Solving large-scale least-squares problems.
+
+
+\bigskip
+
+Watch: \tt{https://www.youtube.com/watch?v=eAYohMUpPMA}
+\begin{center}
+	\includegraphics[width=.8\textwidth]{youtubeCG}
+\end{center}
+
+
+\end{frame}
+
+
+
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+\end{document}

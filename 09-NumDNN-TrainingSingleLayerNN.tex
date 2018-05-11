@@ -1,0 +1,291 @@
+\documentclass[12pt,fleqn]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+
+\title{Training Single Layer Neural Networks}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+\begin{document}
+
+\makebeamertitle
+
+
+\begin{frame}[fragile]\frametitle{Overview}
+
+Given data $\bfY \in \R^{n_f\times n}$ and class probabilities $\bfC\in\R^{n_c\times n}$ we aim to find the transformation parameters $\theta\in\R^p$ and classification weights (including potentially biases) $\bfW \in \R^{n_c \times m}$ by solving
+$$
+\min_{\theta,\bfW} E(\bfW \sigma(\bfK(\theta)\bfY), \bfC) + \lambda R(\bftheta,\bfW)
+$$
+
+Today: Derive practical pipeline consisting of 
+\begin{itemize}
+	\item variable projection
+	\item Stochastic Average Approximation (SAA)
+	\item regularization
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}\frametitle{Variable Projection - 1}
+	Idea: Treat learning problem as coupled optimization problem with blocks $\theta$ and $\bfW$. 
+	
+	Simple illustration for coupled least-squares problem~\cite{GoPe1973,GoPe03,OLearyRust2013}
+	$$
+		\min_{\theta,\bfw} \phi(\theta,\bfw) = \hf \| \bfA(\theta) \bfw - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw\|^2 + \frac{\beta}{2} \| \bfM \theta\|^2
+	$$
+	Note that for given $\theta$ the problem becomes a standard least-squares problem. Define: 
+	$$
+		\bfw(\theta) = \left( \bfA(\theta)^\top \bfA(\theta) + \lambda \bfL^\top \bfL \right)^{-1}{\bfA(\theta)^\top \bfc}
+	$$
+	This gives optimization problem in $\theta$ only (aka \emph{reduced/projected  problem})
+	$$
+		\min_{\theta} \tilde{\phi}(\theta) = \hf \| \bfA(\theta) \bfw(\theta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\theta)\|^2 + \frac{\beta}{2} \| \bfM \theta\|^2
+	$$
+	
+\end{frame}
+\begin{frame}\frametitle{Variable Projection - 2}
+	$$
+		\min_{\theta} \tilde{\phi}(\theta) = \hf \| \bfA(\theta) \bfw(\theta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\theta)\|^2 + \frac{\beta}{2} \| \bfM \theta\|^2
+	$$
+	Optimality condition:
+	$$ 
+		\nabla \tilde{\phi}(\theta) = \nabla_\theta \phi(\theta,\bfw) + \nabla_\theta \bfw(\theta) \nabla_{\bfw} \phi(\theta,\bfw) \stackrel{!}{=} 0.
+	$$
+	Less complicated than it seems since
+	$$
+		\nabla_{\bfw} \phi(\theta,\bfw(\theta)) = \bfA(\theta)^\top( \bfA(\theta) \bfw(\theta) - \bfc) + \lambda \bfL^\top \bfL \bfw(\theta) = 0
+	$$
+	
+	Conclusion:
+	\begin{itemize}
+		\item ignore second term in gradient computation
+		\item apply steepest descent or Gauss-Newton  to minimize $\tilde{\phi}$
+		\item need to solve least-squares problem in each evaluation of objective
+		\item gradient is only correct if LS problem is solved exactly
+	\end{itemize}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Variable Projection for Single Layer}
+	
+$$
+\min_{\theta,\bfW} E(\bfW \sigma(\bfK(\theta)\bfY ), \bfC) + \lambda R(\bftheta,\bfW)
+$$
+Assume that the regularizer is separable, i.e.,
+$$
+ R(\theta,\bfW) =   R_1(\theta) +  R_2(\bfW)
+$$
+and that $R_2$ is convex and smooth. Hence, the projection requires solving the regularized classification problem
+$$
+\bfW(\theta) = \argmin_{\bfW} E(\bfW\sigma(\bfK(\theta)\bfY), \bfC) + \lambda R_2(\bfW)
+$$
+practical considerations:
+\begin{itemize}
+	\item solve for $\bfW(\theta)$ using Newton (need accuracy)
+	\item need good solver to approximate gradient w.r.t. $\theta$  well
+	\item use Gauss-Newton or steepest descent to solve for $\theta$ 
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Stochastic Optimization}
+	Assume that each $\bfy_i$, $\bfc_i$ pair is drawn from some (unknown probability distribution). 
+	
+	Then, we can interpret the learning problem as minimizing the expected value of the cross entropy, e.g., in linear regression
+	$$
+		E(\bfW) = {\mathbb{E}} \left(\hf \|\bfy^\top \bfW - \bfc\|^2\right)
+	$$
+	
+	This is a stochastic optimization problem~\cite{bottou2016optimization}. \pause One idea: \textbf{Stochastic Approximation: } Design iteration $\bfW_k \to \bfW^*$ so that expected value decreases.
+		
+		Example: Stochastic Gradient Descent, ADAM, \ldots
+		
+		Pro: sample can be small (\emph{mini batch})
+		
+		Con: how to monitor objective, linesearch, descent, \ldots
+\end{frame}
+\begin{frame}
+	\frametitle{Stochastic Average Approximation}
+	
+	Alternative way to solve stochastic optimization problem
+	$$
+	E(\bfW) = {\mathbb{E}} \left(\hf \|\bfy^\top \bfW - \bfc\|^2\right)
+	$$
+	
+	 Pick relatively large sample $S \subset \{ 1,\ldots,n\}$ and use deterministic optimization method to solve
+			$$
+				\min_\bfW  \frac{1}{2|S|} \sum_{s\in S} \| \bfy_s \bfW - \bfc_s^\top \|^2.
+			$$
+		
+			Pro: use your favorite solver, linesearch, stopping\ldots
+			
+			Con: large batches needed
+			
+			\begin{center}
+				Note: Sample stays fixed during iteration.
+			\end{center}
+\end{frame}
+\begin{frame}
+	\frametitle{A Practical Approach}
+	
+	Let's combine VarPro and SAA to come up with a simple yet powerful training algorithm.
+	
+	\bigskip
+	\pause
+	
+	Pick $(\theta_0)$ randomly and then do one or more steps of:
+	\begin{enumerate}
+		\item randomly select samples $S$ (large enough)
+		\item do a few steps of variable projection to get $\theta_k$.
+		\begin{itemize}
+			\item inner solver: a few steps of Newton's method
+		\end{itemize}
+		\item check training error on current batch and validation error
+	\end{enumerate}
+	
+	\bigskip
+	\pause
+	
+	Possible problems:
+	\begin{itemize}
+		\item $|S|$ too small $\rightarrow$ training error small but no convergence
+		\item $|S|$ too large $\rightarrow$ slow, overfitting (use regularization)
+		\item Too few Newton steps in classification $\rightarrow$ inaccurate gradients, line search fails, \ldots
+	\end{itemize}	
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Data Preprocessing}
+
+Some practical tips
+\begin{itemize}
+\item Remove the mean of the data
+\item Scale it to be ``reasonable'' scale
+\item Data augmentation
+\item Some other (domain specific) data transforms (optical flow for motion?)
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Regularization for Network Weights}
+
+\begin{itemize}
+\item
+Note that there are many more degrees of freedom.
+\item
+Need to add regularization for $\bfK$
+\item
+$\bfK$ Generally, $\bfK$ is not ``physical'' - difficult to choose reasonable
+regularization.
+\end{itemize}
+
+\bigskip
+
+The obvious choice: Tikhonov
+$$ R(\bfK) = \hf \|\bfK\|^2_F $$
+(also called weight decay)
+
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Learning the weights - Regularization}
+
+\begin{columns}
+	\column{.7\textwidth}
+More recent, demand that $\bfK$ is sparse
+$$ R(\bfK) = \|{\rm vec}(\bfK)\|_1 = \sum_{ij} |\bfK_{ij}| $$
+
+\bigskip
+
+Implementation through soft-thresholding.
+
+
+After each steepest descent iteration set
+$$ \bfK = {\rm softThresh}(\bfK) $$
+	
+	\column{.3\textwidth}
+	\begin{center}
+	\includegraphics[width=4cm]{shoftThresh.jpg}
+	\end{center}
+	
+\end{columns}
+
+\vspace{10mm}
+\begin{center}
+Obtain sparse matrices $\bfK$ that retain only necessary entries
+	
+\end{center}
+
+\end{frame}
+
+
+
+
+\begin{frame}[fragile]\frametitle{Coding: Learning the weights }
+
+{\bf Class problem}
+
+\bigskip
+
+Modify your steepest descent, nonlinear CG and SGD codes to work on single layer
+network with soft thresholding.
+
+Test on Circle, peaks, spiral, MNIST and CIFAR10
+
+Compare and report
+
+\end{frame}
+
+
+% \begin{frame}[fragile]
+% 	\frametitle{Other Hints}
+%
+% 	To accelerate convolutions, you may want to use GPUs. Learn more at
+% 	\begin{verbatim}
+% 		https://www.mathworks.com/discovery/matlab-gpu.html
+% 	\end{verbatim}
+%
+% 	Systems set up in the computer lab:
+% 	\begin{itemize}
+% 		\item \texttt{lab3f, lab3g, lab3h}
+% 		\item make sure to use recent Matlab (hint on exercise sheet)
+% 	\end{itemize}
+%
+% 	Also possible to use Cloud: Example setup
+% 	\begin{itemize}
+% 		\item instance with 2 cores, lots of RAM, $\geq 30$ GB disk, cheaper NVIDIA GPU $\approx$ 0.5\$ per hour and Ubuntu 16.04
+% 		\item you need to install MATLAB and CUDA
+% 	\end{itemize}
+%
+% \end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

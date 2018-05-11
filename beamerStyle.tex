@@ -1,0 +1,52 @@
+
+\xdefinecolor{lavendar}{rgb}{0.8,0.6,1}
+\xdefinecolor{olive}{cmyk}{0.64,0,0.95,0.4}
+%\xdefinecolor{olive}{cmyk}{1,0,0,0}
+\xdefinecolor{mag}{cmyk}{0.1,1,0,0.2}
+\xdefinecolor{lblue}{rgb}{0,0,1.5}
+\xdefinecolor{lred}{rgb}{1,0,0}
+\xdefinecolor{mine}{cmyk}{1,0,0.2,0}
+\xdefinecolor{bluel}{cmyk}{0.1,0,0.9,0.4}
+
+\usepackage{amsmath,amssymb,dsfont,mathrsfs}
+\usepackage{tikz,pgflibraryplotmarks}
+\usepackage{multimedia}
+\usepackage{wasysym}
+\usepackage{rotating}
+\usepackage{algorithm,algorithmic}
+\usepackage{graphicx} % more modern
+\usepackage{subfigure}
+\usepackage{booktabs}
+
+\usepackage{pgfplots}
+\usepackage{verbatim}
+
+\usepackage{setspace}
+\newlength\iwidth
+\newlength\iheight
+
+\newcommand\makebeamertitle{\frame{\maketitle}}%
+\graphicspath{{./images/}}
+\setbeamertemplate{navigation symbols}{}
+\addtobeamertemplate{navigation symbols}{}{%
+    \usebeamerfont{footline}%
+    \usebeamercolor[fg]{footline}%
+	\insertshorttitle
+    \;--
+    \insertframenumber
+}
+
+\newcommand{\sectionstart}{
+	\only<beamer>{
+ 	\begin{frame}% (fold)
+ 		\begin{centering}\Huge \insertsection \par\end{centering}
+ 	\end{frame}% frame the_application (end)
+	}
+ }
+
+
+% make bibliography entries smaller
+\usepackage{natbib}
+\setbeamertemplate{bibliography item}{[\theenumiv]}
+\renewcommand\bibfont{\scriptsize}
+\setbeamertemplate{frametitle continuation}[from second]
