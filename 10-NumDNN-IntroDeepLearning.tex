@@ -282,6 +282,50 @@ Not every network is stable! Time step size depends on our Jacobian
 
 \end{frame}
 
+\newcommand{\image}[1]{\includegraphics[width=35mm,trim=50 0 70 0,clip=true]{images/E10_Stability/#1}}
+\newcommand{\rottext}[1]{\rotatebox{90}{\hbox to 40mm{\hss  #1\hss}}}
+ \newcommand{\imageDiff}[1]{\includegraphics[width=35mm,trim=50 0 0 0,clip=true]{images/E10_Stability/#1}}
+\begin{frame}
+	\frametitle{Why you should care about stability - 1}
+	
+$$ 
+\min_\theta \hf \|\bfY_N(\theta) - \bfC\|_F^2 \quad \quad \bfY_{j+1}(\theta)  = \bfY_j(\theta) + \frac{10}{N} \tanh \left( \bfK \bfY_j(\theta) \right)
+ $$ 
+where $\bfC = \bfY_{200}(1,1)$, $\bfY_0 \sim \mathcal{N}(0,1)$, and
+$$
+ \bfK(\theta) = \begin{pmatrix} -\theta_1-\theta_2 &           \theta_1  &  \theta_2 \\
+\theta_2    &    -\theta_1-\theta_2 &        \theta_1 \\
+       \theta_1 & \theta_2   &    -\theta_1-\theta_2 \end{pmatrix} 
+	   $$       
+\begin{center}
+\begin{tabular}{cc}
+	objective, $N=5$ & objective, $N=100$\\
+\image{Phic} &
+\image{Phif} 
+\end{tabular}
+\pause
+
+\textbf{\tcr{Next: Compare different inputs $\sim$ generalization}}
+	\end{center}       
+\end{frame}
+\begin{frame}
+	\frametitle{Why you should care about stability - 2}
+	
+\begin{center}
+\begin{tabular}{@{}c@{}c@{}c@{}c@{}}
+	& objective, $\bfY_0^{\rm train}$ & objective, $\bfY_0^{\rm test}$ & abs. diff\\
+	\rottext{unstable, $N=5$}
+	& \image{Phic}
+	& \image{Phict}
+	& \imageDiff{Phic-Phict}\\[-8mm]
+	\rottext{stable, $N=100$}
+	& \image{Phif}
+	& \image{Phift}
+	& \imageDiff{Phif-Phift}
+\end{tabular}	
+\end{center}       
+\end{frame}
+
 
 \begin{frame}[fragile]\frametitle{Stability: A Non-Trivial Example}
 
@@ -295,7 +339,7 @@ Here, $Re({\rm eig}(\bfJ)(t))= 0$ for all $\theta$.
 \pause
 			
 Assume we use the forward Euler to discretize
-$$ \bfY_{j+1} = \bfY_{j} + h \sigma( (\bfK_i-\bfK_i^\top) \bfY_i + b_i) $$
+$$ \bfY_{j+1} = \bfY_{j} + h \sigma( (\bfK_j-\bfK_j^\top) \bfY_j + b_j) $$
 Tricky question: How to pick $h$ to ensure stability?
 
 \pause

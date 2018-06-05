@@ -29,7 +29,7 @@ For deep networks, problem is usually not convex and has many local minimum
 \begin{frame}[fragile]\frametitle{Review - Optimization Techniques}
 
 So far, we used deterministic gradient-based methods
-$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k \grad F(\bftheta_k,\bfY), \quad  \nabla F(\theta,\bfY) = \frac1n  \sum_{i=1}^n \nabla f_i(\theta, \bfy_i)$$
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1} \grad F(\bftheta_k,\bfY), \quad  \nabla F(\theta,\bfY) = \frac1n  \sum_{i=1}^n \nabla f_i(\theta, \bfy_i)$$
 
 \smallskip 
 \pause
@@ -63,7 +63,7 @@ Idea: use only a part of the data to update $\bftheta$
 Let ${\cal S}_k \subset \{1,2,\ldots,n\}$. Define the batch objective function as 
 $$ F_{{\cal S}_k}(\bftheta) = \frac{1}{|{\cal S}_k|} \sum_{i \in {\cal S}_k} f_i(\bftheta,\bfY_i) $$
 Then a straight forward extension  is
-$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k  \grad F_{{\cal S}_k}(\bftheta_k) $$
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1}  \grad F_{{\cal S}_k}(\bftheta_k) $$
 
 
 Questions
@@ -81,7 +81,7 @@ References: original method~\cite{RobbinsMonro1951}, recent surveys~\cite{Bottou
 Let ${\cal S}_k \subset \{1,2,\ldots,n\}$. Define the batch objective function as 
 $$ F_{{\cal S}_k}(\bftheta) = \frac{1}{|{\cal S}_k|} \sum_{i \in {\cal S}_k} f_i(\bftheta,\bfY_i) $$
 Then a straight forward extension   is
-$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k  \grad F_{{\cal S}_k}(\bftheta_k) $$
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1}  \grad F_{{\cal S}_k}(\bftheta_k) $$
 
 \bigskip
 \pause
