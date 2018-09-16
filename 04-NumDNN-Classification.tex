@@ -66,7 +66,7 @@
 
 	Naive idea: Let $\bfY \in \R^{n_f\times n}$ be examples with class probabilities $\bfC_{\rm obs} \in [0,1]^{n_c\times n}$, use 
 	$$
-	\phi(W)= \frac{1}{2n} \sum_{j=1}^n\|\bfc(\bfy_j,\bfW) - \bfc_{j,{\rm obs}} \|_F^2
+	\phi(\bfW)= \frac{1}{2n} \sum_{j=1}^n\|\bfc(\bfy_j,\bfW) - \bfc_{j,{\rm obs}} \|_F^2
 	$$
 
 Problems
@@ -228,8 +228,8 @@ One flaw: $ E(\bfc, \widehat \bfc) \not= E(\widehat \bfc, \bfc)$ (verify for our
 Recall: For a single example and two classes we have
  $$
   \bfc(\bfy,\bfw)  = \begin{pmatrix}
-  	{\frac 1 {1+\exp(\bfw^{\top} \bfy)}} \\
-	1-{\frac 1 {1+\exp(\bfw^{\top} \bfy)}}
+  	{\frac 1 {1+\exp(-\bfw^{\top} \bfy)}} \\
+	1-{\frac 1 {1+\exp(-\bfw^{\top} \bfy)}}
   \end{pmatrix} 
   \stackrel{\rm def}{=} 
   \begin{pmatrix}
@@ -258,7 +258,7 @@ $$
 In the case we have many examples need to sum over the data
 \begin{align*}
 	\bfC(\bfY,\bfw) & = \begin{pmatrix}
-		{\frac 1 {1+\exp(\bfw^\top \bfY)}} \\
+		{\frac 1 {1+\exp(-\bfw^\top \bfY)}} \\
 		1-{\frac 1 {1+\exp(\bfw^\top\bfY)}}
 	\end{pmatrix}  \stackrel{def}{=} \begin{pmatrix}
 		h(\bfw^\top \bfY)\\ 1-h(\bfw^\top\bfY)

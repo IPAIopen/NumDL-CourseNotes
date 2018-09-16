@@ -25,7 +25,7 @@
 	directly using $\bfX^* = (\bfA^{\top} \bfA)^{-1}\bfA^{\top} \bfC^\top$. Here
 	$$
 		\bfA = \begin{pmatrix}
-			\bfY^\top \\ \bfe_n^\top
+			\bfY^\top && \bfe_n
 		\end{pmatrix}, \quad \text{ and } \quad 
 		\bfX = \bfW^\top \in \R^{(n_f+1)\times n_c}.
 	$$
@@ -80,15 +80,15 @@ $$ \phi(\bfx) = \hf \|\bfA \bfx - \bfc\|^2 \quad \text{ with } \quad \grad_{\bfx
 
 \bigskip
 
-Steepest descent direction is  $\bfs_j = \bfA^{\top}(\bfc - \bfA \bfx_j)$ and
-$$ \bfx_{j+1} = \bfx_j + \alpha_j \bfs_j $$
+Steepest descent direction is  $\bfd_j = \bfA^{\top}(\bfc - \bfA \bfx_j)$ and
+$$ \bfx_{j+1} = \bfx_j + \alpha_j \bfd_j $$
 
 How to choose $\alpha_j$? 
 \pause
-Idea: Minimize $\phi$ along direction $\bfs_j$
+Idea: Minimize $\phi$ along direction $\bfd_j$
 $$ 
-\alpha_j = \argmin_\alpha \phi(\bfx_j + \alpha \bfs_j) = 
- \argmin_\alpha \hf \|\alpha \bfA \bfs_j - \bfr_j\|^2
+\alpha_j = \argmin_\alpha \phi(\bfx_j + \alpha \bfd_j) = 
+ \argmin_\alpha \hf \|\alpha \bfA \bfd_j - \bfr_j\|^2
 $$
 with residual $\bfr_j = \bfc - \bfA \bfx_j $.
 
@@ -98,7 +98,7 @@ with residual $\bfr_j = \bfc - \bfA \bfx_j $.
 This leads to simple quadratic equation in 1D whose solution is
  
   
-$$ \alpha_j = {\frac { \bfr_j^{\top}\bfA\bfs_j}{\|\bfA \bfs_j\|^2}} $$
+$$ \alpha_j = {\frac { \bfr_j^{\top}\bfA\bfd_j}{\|\bfA \bfd_j\|^2}} $$
 
 
 \end{frame}
@@ -196,7 +196,7 @@ CG is designed to solve quadratic optimization problems
 $$\min_\bfx \hf \bfx^{\top} \bfH \bfx - \bfb^{\top} \bfx$$
 with $\bfH$ symmetric positive definite. In our case
 
-$$ \argmin_\bfw \hf \|\bfA\bfx - \bfc\|^2 = \argmin_\bfx \hf \bfx^{\top} \underbrace{\bfA^{\top}\bfA}_{=\bfH} \bfx - \underbrace{\bfc^{\top}\bfA}_{=\bfb}\bfx $$
+$$ \argmin_\bfx \hf \|\bfA\bfx - \bfc\|^2 = \argmin_\bfx \hf \bfx^{\top} \underbrace{\bfA^{\top}\bfA}_{=\bfH} \bfx - \underbrace{\bfc^{\top}\bfA}_{=\bfb^\top}\bfx $$
 
 \bigskip
  

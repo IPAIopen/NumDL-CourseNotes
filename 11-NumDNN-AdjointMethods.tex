@@ -170,7 +170,7 @@ Block triangular {\bf linear} system for the gradients
 					\underbrace{
                     \begin{pmatrix}
                     \bfJ_{\bfK_i}\bfY_{i+1} \\    \\   \\ \\   \bfJ_{\bfK_i}\bfY_{N}
-                    \end{pmatrix}}_{= \nabla_{\bfJ_{\bfK_i} \bfY}} =
+                    \end{pmatrix}}_{= {\bfJ_{\bfK_i} \bfY}} =
 					\underbrace{
                     \begin{pmatrix}
                     \bfR_i \\  0\\  \vdots \\ \\    0
@@ -180,13 +180,13 @@ Block triangular {\bf linear} system for the gradients
 To compute matrix-vector product $(\bfJ_{\bfK_i}\bfY_{N})\, \bfv$
 \begin{itemize}
 \item Multiply $\bfR\, \bfv$
-\item Solve (forward propagate) $\bfT\, \bfJ_{\bfK_i}\bfY_N = \bfR\, \bfv$
+\item Solve (forward propagate) $\bfT\, \bfJ_{\bfK_i}\bfY = \bfR\, \bfv$
 \item Extract the last time step
 \end{itemize}
 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{The sensitivity equation}
+\begin{frame}[fragile]\frametitle{The Sensitivity Equation}
 
 
 Symbolically

@@ -193,14 +193,15 @@ Consider the softmax function
 $$ E(\bfW) = -\sum \bfY \odot (\bfX \bfW) +\sum \log\left (\sum \exp(\bfX \bfW) \right) $$
 
 
-{\bf Class problems}
+{\bf Class problems:}
 
 \begin{enumerate}
-\item
-Compute the second derivatives of the cross entropy function code it and and check your code.
+\item Compute the Hessian of the cross entropy function
+
+\item Write code that constructs the matrix it and do a derivative check at a random point $\bfW_0$.
 
 \item
-Compute the second derivatives of the cross entropy function times a vector, code it and and check your code.
+Write a code that performs matrix vector products with the Hessian (without constructing it). Test by comparing results with the matrix-based code for a random vector.
 
 \end{enumerate}
 
