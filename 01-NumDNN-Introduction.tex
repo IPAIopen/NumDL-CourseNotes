@@ -10,11 +10,8 @@
 \begin{document}
 
 
-%% ------------------------------------------------------------
-%% ------------------------------------------------------------
-%% ------------------------------------------------------------
 \makebeamertitle
-\section{Course Overview} % (fold)
+\section{Course Overview} 
 \label{sec:course_overview}
 \begin{frame}
 \frametitle{Course Overview}
@@ -63,7 +60,8 @@
 
 \section{Introduction to (Deep) Neural Networks} % (fold)
 \label{sec:introduction_to_deep_neural_networks}
-\begin{frame}\frametitle{{Neural Networks - A Quick Overview}}
+
+\begin{frame}\frametitle{{Neural Networks: History}}
 
 \begin{itemize}
 	\item Neural Networks with a particular (deep) architecture
@@ -118,7 +116,7 @@ is to estimate or ``learn'' the parameters $\bftheta$
 \begin{frame}\frametitle{Learning From Data: The Core of Science}
 
 
-How to choose $f$?
+Given inputs and outputs, how to choose $f$?
 
 \bigskip
 
@@ -150,7 +148,7 @@ What is the optimal value for $g$?
 
 
 
-How to choose $f$?
+Given inputs and outputs, how to choose $f$?
 
 \bigskip
 
@@ -232,10 +230,8 @@ Two common reasons:
 \end{enumerate}
 
 
-\end{frame}
-
-
-\begin{frame}\frametitle{Example 1: Classification of Hand-written Digits }
+\end{frame} 
+\begin{frame}\frametitle{Example: Classification of Hand-written Digits }
 
 \begin{itemize}
 \item
@@ -250,8 +246,8 @@ Examples (MNIST):
 \begin{center}
 	\begin{tabular}{cc}
 		$\bfy_1$ & $\bfy_2$\\
-	\includegraphics[width=30mm]{maybe4.jpg} &
-	\includegraphics[width=30mm]{maybe7.jpg} \\
+	\includegraphics[width=30mm]{maybe4} &
+	\includegraphics[width=30mm]{maybe7} \\
 	$\bfc_1 = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0]^\top$ &
 	$\bfc_2 = [0, 0.3, 0, 0, 0, 0, 0, 0.7, 0, 0]^\top$
 	\end{tabular}
@@ -259,14 +255,10 @@ Examples (MNIST):
 \end{center}
 
 
-\end{frame}
+\end{frame} 
+\begin{frame}\frametitle{Example: Classification of Natural Images}
 
-% section introduction_to_deep_neural_networks (end)
-
-\begin{frame}\frametitle{Example 2: Classification of Natural Images}
-
-Same problem but images are natural images
-
+Image classification of natural images
 \bigskip
 
 Examples (CIFAR-10):
@@ -275,9 +267,8 @@ Examples (CIFAR-10):
 \end{center}
 
 \end{frame}
-
-
-\begin{frame}\frametitle{Example 3:  Semantic Segmentation}
+ 
+\begin{frame}\frametitle{Example:  Semantic Segmentation}
 
 \begin{itemize}
 	\item

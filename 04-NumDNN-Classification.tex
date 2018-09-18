@@ -413,9 +413,7 @@ For large-scale problems, use derivative-based optimization algorithm. (Examples
 
 Excellent references: \cite{NocedalWright2006,BoydVandenberghe2004,Beck2014}
 \end{frame}
-
-
-\begin{frame}\frametitle{Differentiating the Softmax Regression Function}
+ \begin{frame}\frametitle{Differentiating the Softmax Function - 1}
 
 We need to compute the derivative of the cross entropy function with respect to $\bfW$.
 Three hints:
@@ -440,7 +438,7 @@ We use the common notation:
 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function}
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 2}
 
 Do it in three steps:
 \begin{enumerate}
@@ -465,7 +463,7 @@ $$\grad_{\bfS}E_1 =  \grad_{\bfS} {\rm tr}(\bfC_{\rm obs}^{\top} \bfS) = \bfC_{\
 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function}
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 3}
 
 
 $$ E(\bfS) = \frac{1}{n}\overbrace{-{\rm tr}(\bfC_{\rm obs}^{\top} \bfS)}^{E1} + \frac{1}{n} \overbrace{\log(\bfe_{n_c}^\top\exp(\bfS))\bfe_n}^{E2}  $$
@@ -489,7 +487,7 @@ $$ \bfJ_{\bfS}  \log(\bfe_{n_c}^\top\exp(\bfS)) = {\rm diag}
 \end{frame}
 
 
-\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function}
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 4}
 	Recall:
 $$ \bfJ_{\bfS}  E_2 = \bfe_n^\top  {\rm diag}
 \left( {\frac {1}{\bfe_{n_c}^\top\exp(\bfS)}}\right)
@@ -518,7 +516,7 @@ Focus on last term:
 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function}
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 5}
 
  
  $$ \grad_{\bfS}E_2 =     {\rm diag}( {\rm vec}(\exp(\bfS))) (\bfI \otimes \bfe_{n_c})
@@ -550,7 +548,7 @@ $$     \grad_{\bfS}E =  -\frac{1}{n}\bfC_{\rm obs} + \frac{1}{n}\exp(\bfS) \odot
 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function}
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 6}
 
 $$ E(\bfW) = -\frac{1}{n}\overbrace{{\rm tr}(\bfC_{\rm obs}^{\top} (\bfW\bfY))}^{E1} + \frac{1}{n} \overbrace{\bfe_n^{\top}\log(\bfe_{n_c}^\top \exp(\bfW\bfY))}^{E2}  $$
 
@@ -716,22 +714,8 @@ end
 \begin{frame}[allowframebreaks]
 	\frametitle{References}
 \bibliographystyle{abbrv}
- % \bibliographystyle{plainnat}
 \bibliography{NumDNN}
 
 \end{frame}
 
 \end{document}
-
-
-
-
-
-
-
-
-
-
-
-
-

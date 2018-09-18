@@ -9,11 +9,6 @@
 \date{}
 
 \begin{document}
-
-
-%% ------------------------------------------------------------
-%% ------------------------------------------------------------
-%% ------------------------------------------------------------
 \makebeamertitle
 
 \begin{frame}
@@ -28,7 +23,7 @@
 		\item $\bfc_1,\bfc_,\ldots,\bfc_n \in \R^{n_c}$ - output observations 
 		\item $\bfC = \left[\bfc_1, \bfc_2,\ldots,\bfc_n\right] \in \R^{n_c \times n}$ - observation matrix
 	\end{itemize}
-\end{frame}
+\end{frame} 
 
 \begin{frame}
 	\frametitle{Neural Networks}
@@ -36,15 +31,18 @@
 	\begin{itemize}
 		\item $f(\bfy,\theta) = \bfc$ - model represented by neural net
 		\item $\theta \in \R^{n_p}$ - parameters of model
-		\item $\theta^{(1)}, \theta^{(2)}, \ldots$ - parts of weights. Clear from context
+		\item $\theta^{(1)}, \theta^{(2)}, \ldots$ - parts of weights. Division clear from context. Examples
+		\begin{enumerate}
+			\item $\theta^{(j)}$ are weights of $j$th layer.
+			\item $\theta^{(1)}$ are weights for convolution kernel, $\theta^{(2)}$ are weights for bias
+		\end{enumerate}
 		
-		Example: $\theta^{(j)}$ are weights of $j$th layer.
 		\item $N$ - number of layers
 		\item $\bfK$ - linear operator applied to features
 		\item $b$    - bias
 		\item $\sigma : \R\to\R$ - activation function
 	\end{itemize}
-\end{frame}
+\end{frame} 
 
 \begin{frame}
 	\frametitle{Optimization and Loss}
@@ -65,7 +63,7 @@
 	\end{itemize}
 \end{frame}
 
-\begin{frame}
+ \begin{frame}
 	\frametitle{Linear Algebra - 1}
 	\begin{itemize}
 		\item $\bfe_k \in\R^k$ - vector of all ones

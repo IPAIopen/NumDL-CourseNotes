@@ -12,23 +12,25 @@
 \makebeamertitle
 
 
-\section{Least-Squares Regression} % (fold)
-\label{sec:least_squares_regression}
-\begin{frame}\frametitle{Classification and Least-Squares Regression}
 
-Given examples
+\section{Least-Squares Regression} 
+\label{sec:least_squares_regression}
+
+
+\begin{frame}\frametitle{Learning Problem}
+
+Given examples (inputs)
 $$ \bfY = \begin{pmatrix}  \bfy_1 &  \bfy_2   & \cdots & & \bfy_n \end{pmatrix} \in\R^{n_f\times n}$$
-and labels
-$$ \bfC = \begin{pmatrix} & \bfc_1  &  \bfc_2  & \cdots &  \bfc_n \end{pmatrix} \in\R^{n_c\times n}$$
-Goal: Find a classification/prediction function $f(\cdot,\bftheta)$, i.e., 
+and labels (outputs)
+$$ \bfC = \begin{pmatrix}  \bfc_1  &  \bfc_2  & \cdots &  \bfc_n \end{pmatrix} \in\R^{n_c\times n},$$
+
+find a classification/prediction function $f(\cdot,\bftheta)$, i.e., 
 
 $$
 f(\bfy_j,\bftheta) \approx \bfc_j, \quad j=1,\ldots,n.
 $$
 
-\end{frame}
-
-\begin{frame}\frametitle{Regression and Least-Squares}
+\end{frame} \begin{frame}\frametitle{Regression and Least-Squares}
 
 Simplest option, a linear model with $\bftheta = (\bfW,\bfb)$ and
 $$ f(\bfY,\bfW,\bfb) =  \bfW \bfY + \bfb \bfe_n^\top \approx \bfC $$
@@ -68,9 +70,8 @@ $$ \min_{\bfW} \hf \|\bfW \bfY - \bfC\|^2_F $$
 		\min_\bfX \hf \| \bfA \bfX - \bfC^\top \|^2_F
 	$$
 		
-\end{frame}
-
-\begin{frame}\frametitle{Regression and Least-Squares}
+\end{frame} 
+\begin{frame}\frametitle{Optimality Conditions for Least-Squares}
 
 To minimize a function need to differentiate and equate to $0$
 
@@ -89,11 +90,9 @@ Compute the derivatives in three steps
 \end{enumerate}
 
 
-\end{frame}
+\end{frame} \begin{frame}\frametitle{Least-Squares: Normal Equations}
 
-\begin{frame}\frametitle{Regression and Least-Squares}
-
-Putting it all together gives
+The necessary and sufficient optimality conditions for the least-squares problem are
 $$ {\frac {\partial \left( \hf \|\bfA\bfX - \bfC^\top\|^2_F \right)}{\partial \bfX}} = 
 \bfA^\top(\bfA \bfX - \bfC^\top)=0 $$
 
@@ -124,7 +123,7 @@ Here, $\bfA^\top \bfA \in \R^{n_f \times n_f}$ must be invertible, i.e.,
 		
 		\item Solve the problem using the normal equations derived above.
 		
-		\item Use optimal weights to predict labels for test data. How well can you do?
+		\item Use optimal weights to predict labels for test data. How well does your solution generalize?
 		
 	\end{enumerate}
 	
@@ -133,14 +132,14 @@ Here, $\bfA^\top \bfA \in \R^{n_f \times n_f}$ must be invertible, i.e.,
 \end{frame}
 % section coding (end)
 
-\section{Bias Variance} % (fold)
+\section{Regularization} 
 \label{sec:bias_variance}
 
-\begin{frame}\frametitle{Ill-posedness and Regularization - 1}
+\begin{frame}\frametitle{Ill-posedness and the SVD}
 
 If the data is linearly dependent or close to be linearly dependent, least-squares problem gives no good solution~\cite{Hansen1998,Vogel2002,Hansen2010}.
 
-Understanding can be gained by the Singular Value Decomposition (SVD) (e.g.,~\cite[Ch. 8]{AscherGreif2011})
+Understanding can be gained by the \emph{Singular Value Decomposition} (SVD) (e.g.,~\cite[Ch. 8]{AscherGreif2011})
 
 $$ \bfA = \bfU \bfSigma \bfV^{\top} $$
 
@@ -151,7 +150,7 @@ $$ \bfSigma = \begin{pmatrix} \sigma_1  &  &  \\ &  \ddots &  \\ &  &  \sigma_{n
 
 \end{frame}
 
-\begin{frame}\frametitle{Ill-posedness and Regularization - 2}
+\begin{frame}\frametitle{Ill-posedness and Regularization}
 
 Important is the \emph{effective rank}: If $\sigma_j \ll \sigma_1$ for all
 $j\geq k$, then the effective rank of the problem is $k$.

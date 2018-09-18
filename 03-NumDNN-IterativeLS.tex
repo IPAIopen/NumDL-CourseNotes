@@ -262,22 +262,23 @@ Facts:
 \end{columns}
 \end{frame}
 
-
-
-
 \begin{frame}
 	\frametitle{Iterative Regularization}
 
+Consider
+$$
+	\min_\bfx \| \bfA \bfx - \bfb \|^2
+$$
 \begin{itemize}
 \item
-Assume that $\bfA$ has a null space
+Assume that $\bfA$ has non-trivial null space
 \item The matrix $\bfA^{\top}\bfA$ is not invertible
-\item Can we still use CGLS to solve(?) the least squares problem
+\item Can we still use iterative methods (CG, CGLS, \ldots)?
 \end{itemize}
 
 \bigskip
 
-What are the properties of CGLS iterations?
+What are the properties of the iterates? 
 
 \bigskip
 
@@ -408,9 +409,7 @@ Procedure
 \begin{frame}[allowframebreaks]
 	\frametitle{References}
 \bibliographystyle{abbrv}
- % \bibliographystyle{plainnat}
 \bibliography{NumDNN}
 
 \end{frame}
 \end{document}
-
