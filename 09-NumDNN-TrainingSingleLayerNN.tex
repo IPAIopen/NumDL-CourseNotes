@@ -14,9 +14,9 @@
 
 \begin{frame}[fragile]\frametitle{Overview}
 
-Given data $\bfY \in \R^{n_f\times n}$ and class probabilities $\bfC\in\R^{n_c\times n}$ we aim to find the transformation parameters $\theta\in\R^p$ and classification weights (including potentially biases) $\bfW \in \R^{n_c \times m}$ by solving
+Given data $\bfY \in \R^{n_f\times n}$ and class probabilities $\bfC\in\R^{n_c\times n}$ we aim to find the transformation parameters $\bftheta\in\R^p$ and classification weights (including potentially biases) $\bfW \in \R^{n_c \times m}$ by solving
 $$
-\min_{\theta,\bfW} E(\bfW \sigma(\bfK(\theta)\bfY), \bfC) + \lambda R(\bftheta,\bfW)
+\min_{\bftheta,\bfW} E(\bfW \sigma(\bfK(\bftheta)\bfY), \bfC) + \lambda R(\bftheta,\bfW)
 $$
 
 Today: Derive practical pipeline consisting of 
@@ -30,33 +30,33 @@ Today: Derive practical pipeline consisting of
 \end{frame}
 
 \begin{frame}\frametitle{Variable Projection - 1}
-	Idea: Treat learning problem as coupled optimization problem with blocks $\theta$ and $\bfW$. 
+	Idea: Treat learning problem as coupled optimization problem with blocks $\bftheta$ and $\bfW$. 
 	
 	Simple illustration for coupled least-squares problem~\cite{GoPe1973,GoPe03,OLearyRust2013}
 	$$
-		\min_{\theta,\bfw} \phi(\theta,\bfw) = \hf \| \bfA(\theta) \bfw - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw\|^2 + \frac{\beta}{2} \| \bfM \theta\|^2
+		\min_{\bftheta,\bfw} \phi(\bftheta,\bfw) = \hf \| \bfA(\bftheta) \bfw - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
-	Note that for given $\theta$ the problem becomes a standard least-squares problem. Define: 
+	Note that for given $\bftheta$ the problem becomes a standard least-squares problem. Define: 
 	$$
-		\bfw(\theta) = \left( \bfA(\theta)^\top \bfA(\theta) + \lambda \bfL^\top \bfL \right)^{-1}{\bfA(\theta)^\top \bfc}
+		\bfw(\bftheta) = \left( \bfA(\bftheta)^\top \bfA(\bftheta) + \lambda \bfL^\top \bfL \right)^{-1}{\bfA(\bftheta)^\top \bfc}
 	$$
-	This gives optimization problem in $\theta$ only (aka \emph{reduced/projected  problem})
+	This gives optimization problem in $\bftheta$ only (aka \emph{reduced/projected  problem})
 	$$
-		\min_{\theta} \tilde{\phi}(\theta) = \hf \| \bfA(\theta) \bfw(\theta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\theta)\|^2 + \frac{\beta}{2} \| \bfM \theta\|^2
+		\min_{\bftheta} \tilde{\phi}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
 	
 \end{frame}
 \begin{frame}\frametitle{Variable Projection - 2}
 	$$
-		\min_{\theta} \tilde{\phi}(\theta) = \hf \| \bfA(\theta) \bfw(\theta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\theta)\|^2 + \frac{\beta}{2} \| \bfM \theta\|^2
+		\min_{\bftheta} \tilde{\phi}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
 	Optimality condition:
 	$$ 
-		\nabla \tilde{\phi}(\theta) = \nabla_\theta \phi(\theta,\bfw) + \nabla_\theta \bfw(\theta) \nabla_{\bfw} \phi(\theta,\bfw) \stackrel{!}{=} 0.
+		\nabla \tilde{\phi}(\bftheta) = \nabla_\bftheta \phi(\bftheta,\bfw) + \nabla_\bftheta \bfw(\bftheta) \nabla_{\bfw} \phi(\bftheta,\bfw) \stackrel{!}{=} 0.
 	$$
 	Less complicated than it seems since
 	$$
-		\nabla_{\bfw} \phi(\theta,\bfw(\theta)) = \bfA(\theta)^\top( \bfA(\theta) \bfw(\theta) - \bfc) + \lambda \bfL^\top \bfL \bfw(\theta) = 0
+		\nabla_{\bfw} \phi(\bftheta,\bfw(\bftheta)) = \bfA(\bftheta)^\top( \bfA(\bftheta) \bfw(\bftheta) - \bfc) + \lambda \bfL^\top \bfL \bfw(\bftheta) = 0
 	$$
 	
 	Conclusion:
@@ -73,21 +73,21 @@ Today: Derive practical pipeline consisting of
 	\frametitle{Variable Projection for Single Layer}
 	
 $$
-\min_{\theta,\bfW} E(\bfW \sigma(\bfK(\theta)\bfY ), \bfC) + \lambda R(\bftheta,\bfW)
+\min_{\bftheta,\bfW} E(\bfW \sigma(\bfK(\bftheta)\bfY ), \bfC) + \lambda R(\bftheta,\bfW)
 $$
 Assume that the regularizer is separable, i.e.,
 $$
- R(\theta,\bfW) =   R_1(\theta) +  R_2(\bfW)
+ R(\bftheta,\bfW) =   R_1(\bftheta) +  R_2(\bfW)
 $$
 and that $R_2$ is convex and smooth. Hence, the projection requires solving the regularized classification problem
 $$
-\bfW(\theta) = \argmin_{\bfW} E(\bfW\sigma(\bfK(\theta)\bfY), \bfC) + \lambda R_2(\bfW)
+\bfW(\bftheta) = \argmin_{\bfW} E(\bfW\sigma(\bfK(\bftheta)\bfY), \bfC) + \lambda R_2(\bfW)
 $$
 practical considerations:
 \begin{itemize}
-	\item solve for $\bfW(\theta)$ using Newton (need accuracy)
-	\item need good solver to approximate gradient w.r.t. $\theta$  well
-	\item use Gauss-Newton or steepest descent to solve for $\theta$ 
+	\item solve for $\bfW(\bftheta)$ using Newton (need accuracy)
+	\item need good solver to approximate gradient w.r.t. $\bftheta$  well
+	\item use Gauss-Newton or steepest descent to solve for $\bftheta$ 
 \end{itemize}
 \end{frame}
 
@@ -136,10 +136,10 @@ practical considerations:
 	\bigskip
 	\pause
 	
-	Pick $(\theta_0)$ randomly and then do one or more steps of:
+	Pick $(\bftheta_0)$ randomly and then do one or more steps of:
 	\begin{enumerate}
 		\item randomly select samples $S$ (large enough)
-		\item do a few steps of variable projection to get $\theta_k$.
+		\item do a few steps of variable projection to get $\bftheta_k$.
 		\begin{itemize}
 			\item inner solver: a few steps of Newton's method
 		\end{itemize}
@@ -237,6 +237,18 @@ Test on Circle, peaks, spiral, MNIST and CIFAR10
 Compare and report
 
 \end{frame}
+\begin{frame}\frametitle{Experiment: Peaks}
+	
+	Compare the three approaches for training a single layer neural network
+	
+	\begin{itemize}
+		\item \texttt{ESingleLayer\_PeaksSGD.m} - stochastic gradient descent 
+		\item \texttt{ESingleLayer\_PeaksNewtonCG.m} - Newton CG with block-diagonal Hessian approximation
+		\item \texttt{ESingleLayer\_PeaksVarPro.m} - Fully coupled solver. Eliminate $\bftheta$ and use steepest descent/Newton CG for reduced problem.
+	\end{itemize}
+	
+\end{frame}
+
 
 
 % \begin{frame}[fragile]

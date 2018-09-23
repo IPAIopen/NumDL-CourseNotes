@@ -67,12 +67,12 @@ In both cases the optimization can fail
 Let $\bfy$ be 1D grid function, $\bfy \leftrightarrow y$ ($n$ cells of width $h_x=1/n$)
 
 \begin{align*}
-K(\theta)\bfy & = [\theta_1\; \theta_2\; \theta_3] * \bfy  \\
+K(\bftheta)\bfy & = [\bftheta_1\; \bftheta_2\; \bftheta_3] * \bfy  \\
  & =\left(\frac{\beta_1}{4} [1\;\; 2\;\; 1]  + \frac{\beta_2}{2h_x} [-1\;\; 0 \;\; 1] + \frac{\beta_3}{h_x^2}[-1\;\; 2 -1] \right) * \bfy
 \end{align*}
 
 \pause
-Relation between $\beta$ and $\theta$ given by
+Relation between $\beta$ and $\bftheta$ given by
 $$
 	\underbrace{
 	\left( 
@@ -92,9 +92,9 @@ $$
 	=
 	\left( 
 		\begin{array}{r}
-			\theta_1 \\ 
-			\theta_2 \\
-			\theta_3
+			\bftheta_1 \\ 
+			\bftheta_2 \\
+			\bftheta_3
 		\end{array}
 	\right).
 $$
@@ -104,7 +104,7 @@ $$
 
 In the limit $h_x \to 0$ this gives
 $$
-	K(\theta(t)) = \beta_1(t) + \beta_2(t) \partial_x + \beta_3(t) \partial_x^2.
+	K(\bftheta(t)) = \beta_1(t) + \beta_2(t) \partial_x + \beta_3(t) \partial_x^2.
 $$
 \pause
 
@@ -120,9 +120,9 @@ $$
 	
 	Ex: Let $y(x) = (cos(2 \pi x^4))+x-0.8(x-0.5)^2$, $n = 8$, and
 	$$
-		\theta_{\rm coarse} = (-67,  129, -59)^\top.
+		\bftheta_{\rm coarse} = (-67,  129, -59)^\top.
 	$$
-	Find corresponding kernel, $\theta_{\rm fine}$  on fine mesh.
+	Find corresponding kernel, $\bftheta_{\rm fine}$  on fine mesh.
 	
 	\bigskip
 	\pause
@@ -130,7 +130,7 @@ $$
 	Strategy:
 	\begin{enumerate}
 		\item setup $\bfA(h_c)$ and compute $\beta$
-		\item setup $\bfA(h_f)$ and compute $\theta_{\rm fine}$
+		\item setup $\bfA(h_f)$ and compute $\bftheta_{\rm fine}$
 	\end{enumerate}
 	
 	\bigskip
@@ -144,9 +144,9 @@ $$
 \begin{frame}
 	\frametitle{Convolution and PDEs - 2D Case}
 	
-	Similar arguments apply in two and more dimensions. Let $\theta\in\R^{3\times 3}$ be a given stencil then
+	Similar arguments apply in two and more dimensions. Let $\bftheta\in\R^{3\times 3}$ be a given stencil then
 	\begin{align*}
-		K(\theta) =&  \beta_1  + \beta_2 \partial_x + \beta_3 \partial_y + \beta_4 \partial_{xy} + \beta_5 \partial_{xx} \\
+		K(\bftheta) =&  \beta_1  + \beta_2 \partial_x + \beta_3 \partial_y + \beta_4 \partial_{xy} + \beta_5 \partial_{xx} \\
 		& + \beta_6 \partial_{yy} + \beta_7 \partial_{x^2y} + \beta_8 \partial_{xy^2} + \beta_9 \partial_{x^2y^2}
 	\end{align*}
 	How to get the coefficients? Let $h_x>0$ pixel size, use 
@@ -263,13 +263,13 @@ $$
 	
 	Residual Neural Network is discretization of 
 	$$
-		\partial_t \bfy(t) = \bfK_2(t) \sigma\left(\bfK_1(t) \bfy + b(t)\right), \quad \bfy(0)= \bfy_0.
+		\partial_t \bfy(t) = \bfK_2(t) \sigma\left(\bfK_1(t) \bfy(t) + b(t)\right), \quad \bfy(0)= \bfy_0.
 	$$
 	\pause
 	
 	To analyze stability need to look at eigenvalues of 
 	$$
-		\bfJ(t) = \bfK_2(t) {\rm diag}\left(\sigma'(\bfK_1(t) \bfy + b)\right) \bfK_1(t)
+		\bfJ(t) = \bfK_2(t) {\rm diag}\left(\sigma'(\bfK_1(t) \bfy(t) + b(t))\right) \bfK_1(t)
 	$$
 	Difficult to analyze eigenvalues for general $\bfK_2$ and $\bfK_1$. 
 	
@@ -277,14 +277,13 @@ $$
 	
 	Easy option: Set $\bfK_2 = - \bfK_1^\top$ (and drop subscript index). Doing so gives:
 	$$
-		\bfJ_{sym}(t) - \bfK(t)^\top {{\rm diag}\left(\sigma'(\bfK_1(t) \bfy + b)\right)} \bfK(t)
+		\bfJ_{sym}(t)=  - \bfK(t)^\top {{\rm diag}\left(\sigma'(\bfK_1(t) \bfy(t) + b(t))\right)} \bfK(t)
 	$$
-	symmetric negative definite $\leadsto$ stability if $\partial_t \bfK$ small
+	symmetric negative semidefinite $\leadsto$ stability if $\partial_t \bfK$ small
 	
 	\begin{center}
 		\texttt{E15ParabolicCNN.m}
 	\end{center}
-	
 \end{frame}
 
 \begin{frame}
@@ -293,13 +292,13 @@ $$
 		In original Residual Net choose $\bfK_2 = - \bfK_1^\top = \bfK^\top$.
 		This gives parabolic CNN
 		$$
-		 \partial_t \bfY_{t} = -\bfK(t)^{\top} \sigma(\bfK(t) \bfY  + \bfb(t)), \quad \bfY(0) = \bfY_0 
+		 \partial_t \bfY(t) = -\bfK(t)^{\top} \sigma(\bfK(t) \bfY(t)  + \bfb(t)), \quad \bfY(0) = \bfY_0.
 		$$
 		
 	 \pause
 	
 	\begin{theorem}
-	    If $\sigma$ is monotonically non-decreasing, then the forward propagation is stable, i.e., there is a $M>0$ such that
+	    If $\sigma$ is monotonically non-decreasing, then the forward propagation is stable, i.e., there is a $M>0$ such that for all $T$
 	    \begin{equation*}
 	        \|\bfY(T) - \bfY_{\epsilon}(T)\|_F \leq M \|\bfY(0) - \bfY_{\epsilon}(0)\|_F,
 	    \end{equation*}
@@ -341,6 +340,7 @@ $$
 	\frametitle{Relation to Total Variation}
 	
 
+
 	Note that the parabolic network can be seen as a gradient flow for
 	$$
 		\phi(\bfY) = s(\bfK(t) \bfY(t) + b(t)),
@@ -350,20 +350,20 @@ $$
 	\begin{columns}
 		\column{.6\textwidth}
 	\begin{itemize}
-		\item $\sigma = \max(x,0)$: 
+		\item $\sigma(x) = \max(x,0)$: 
 		$$
 			s(x) = \max(x,0)^2
 		$$
-		\item $\sigma = \tanh(x)$:
+		\item $\sigma(x) = \tanh(x)$:
 		$$
 			s(x) = \log(\exp(x) - \exp(-x))
 		$$
 		
-		For $\bfK(t) = \nabla$, this shows a relation to total variation~\cite{RudinOsherFatemi1992}.
+		For $\bfK(t) = \nabla_{h_x}$, this shows a relation to total variation~\cite{RudinOsherFatemi1992}.
 	\end{itemize}
 		
 		\column{.4\textwidth}
-		\includegraphics[width=4.5cm]{E15-TV}
+		\includegraphics[width=4.5cm,height=4.0cm]{E15-TV}
 		
 		\footnotesize thanks to Stanley Osher for providing this example
 	\end{columns}

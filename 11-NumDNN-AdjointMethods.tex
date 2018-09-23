@@ -17,7 +17,7 @@
 
 Change in notation: Moving forward it is more convenient to define $\bfY \in \R^{n_f \times n}$ (transpose data matrix) and $\bfC \in \R^{n_c \times n}$. 
 
-$$ \dot{\bfY}(t) = \sigma(\bfK(t) \bfY(t)  + b(t)) \quad \bfY(0) = \bfY_0 $$
+$$ \partial_t{\bfY}(t) = \sigma(\bfK(t) \bfY(t)  + b(t)) \quad \bfY(0) = \bfY_0 $$
 
 The goal is to plan a path such that the transformed features, $\bfY(T)$, can be linearly separated.
 
@@ -36,7 +36,7 @@ The goal is to plan a path such that the transformed features, $\bfY(T)$, can be
 
 Idea: Obtain forward propagation by discretizing the ODE
 
-$$ \dot{\bfY} = \sigma( \bfK\bfY + b) \quad \bfY(0) = \bfY_0 $$
+$$ \partial_t{\bfY} = \sigma( \bfK\bfY + b) \quad \bfY(0) = \bfY_0 $$
 
 \bigskip
 \pause

@@ -37,7 +37,7 @@ Conservative example: Consider MNIST ($n_f = 28^2$) and use $m=n_f$ $\leadsto 61
 Possible remedies:
 \begin{itemize}
 	\item \textbf{Regularization:} penalize $\bfK$ 
-	\item \textbf{Parametric model:} $\bfK(\theta)$ where $\theta\in\R^p$ with $p\ll m\cdot n_f$.
+	\item \textbf{Parametric model:} $\bfK(\bftheta)$ where $\bftheta\in\R^p$ with $p\ll m\cdot n_f$.
 \end{itemize}
 \end{frame}
 
@@ -46,32 +46,32 @@ Possible remedies:
 	\begin{itemize}
 		\item Diagonal scaling:
 		$$
-			\bfK(\theta) = {\rm diag}(\theta) \in \R^{n_f\times n_f}
+			\bfK(\bftheta) = {\rm diag}(\bftheta) \in \R^{n_f\times n_f}
 		$$
 		Advantage: preserves size and structure of data.
 		\pause
 		\item Antisymmetric kernel
 		$$
-			\bfK(\theta) = \left(
+			\bfK(\bftheta) = \left(
 				\begin{array}{rrr}
-					0 & \theta_1 & \theta_2 \\
-					-\theta_1 & 0 & \theta_3 \\
-					-\theta_2 & -\theta_3 & 0
+					0 & \bftheta_1 & \bftheta_2 \\
+					-\bftheta_1 & 0 & \bftheta_3 \\
+					-\bftheta_2 & -\bftheta_3 & 0
 				\end{array}
 			\right)
 		$$
-		Advantage?: ${\rm real}(\lambda_i(\bfK(\theta))) = 0$. 
+		Advantage?: ${\rm real}(\lambda_i(\bfK(\bftheta))) = 0$. 
 		\pause
 		\item $M$-matrix
 		$$
-		\bfK(\theta) = \left(
+		\bfK(\bftheta) = \left(
 				\begin{array}{rrr}
-					\theta_1+\theta_2 & -\theta_1 & -\theta_2 \\
-					-\theta_3 & \theta_3 + \theta_4 & -\theta_4 \\
-					-\theta_5 & -\theta_6 & \theta_5+\theta_6
+					\bftheta_1+\bftheta_2 & -\bftheta_1 & -\bftheta_2 \\
+					-\bftheta_3 & \bftheta_3 + \bftheta_4 & -\bftheta_4 \\
+					-\bftheta_5 & -\bftheta_6 & \bftheta_5+\bftheta_6
 				\end{array}
 			\right)
-			\quad \theta \geq 0
+			\quad \bftheta \geq 0
 		$$
 		Advantage: like differential operator
 	\end{itemize}
@@ -79,9 +79,9 @@ Possible remedies:
 
 \begin{frame}
 	\frametitle{Differentiating Parametric Models}
-	Need derivatives of model to optimize $\theta$ in
+	Need derivatives of model to optimize $\bftheta$ in
 	$$
-		E(\bfW \sigma(\bfK(\theta)\bfY+b),\bfC) 
+		E(\bfW \sigma(\bfK(\bftheta)\bfY+b),\bfC) 
 	$$
 	(we can re-use previous derivatives and use chain rule)
 	
@@ -90,7 +90,7 @@ Possible remedies:
 	
 	Note that all previous models are linear in the following sense
 	$$
-		\bfK(\theta) = {\rm mat}(\bfQ\, \theta)
+		\bfK(\bftheta) = {\rm mat}(\bfQ\, \bftheta)
 	$$
 	
 	\bigskip
@@ -98,25 +98,25 @@ Possible remedies:
 	
 	Therefore, matrix-vector products with the Jacobian simply are
 	$$
-		\bfJ_\theta (\bfK(\theta)) \bfv  = {\rm mat}(\bfQ \ \bfv)\quad\text{ and }\quad
-		\bfJ_\theta (\bfK(\theta))^\top \bfw  = \bfQ^\top \bfw
+		\bfJ_\bftheta (\bfK(\bftheta)) \bfv  = {\rm mat}(\bfQ \ \bfv)\quad\text{ and }\quad
+		\bfJ_\bftheta (\bfK(\bftheta))^\top \bfw  = \bfQ^\top \bfw
 	$$
 	where $\bfv \in \R^p$ and $\bfw \in \R^m$.
 \end{frame}
 
 \begin{frame}\frametitle{Example: Derivative of M-matrix}
 	$$
-	\bfK(\theta) = \left(
+	\bfK(\bftheta) = \left(
 			\begin{array}{rrr}
-				\theta_1+\theta_2 & -\theta_1 & -\theta_2 \\
-				-\theta_3 & \theta_3 + \theta_4 & -\theta_4 \\
-				-\theta_5 & -\theta_6 & \theta_5+\theta_6
+				\bftheta_1+\bftheta_2 & -\bftheta_1 & -\bftheta_2 \\
+				-\bftheta_3 & \bftheta_3 + \bftheta_4 & -\bftheta_4 \\
+				-\bftheta_5 & -\bftheta_6 & \bftheta_5+\bftheta_6
 			\end{array}
 		\right)
-		\quad \theta \geq 0
+		\quad \bftheta \geq 0
 	$$
 	\pause
-	verify that this can be written as $K(\theta) = {\rm mat}(\bfQ \, \theta)$ where
+	verify that this can be written as $K(\bftheta) = {\rm mat}(\bfQ \, \bftheta)$ where
 	$$
 		\bfQ = \left(
 			\begin{array}{rrrrrr}
@@ -148,7 +148,7 @@ Possible remedies:
 			\node at (0.3,0){\includegraphics[width=1cm]{E13Conv2D-theta}};
 			\node at (3,0){\includegraphics[width=4cm]{E13Conv2D-Z}};
 			\node at (-2.3,+2.1){\small $\bfy \in \R^{28\times28}$ input features};
-			\node at (0,-2.2){\small \textcolor{red}{$\theta\in\R^{5\times 5}$ convolution kernel}};
+			\node at (0,-2.2){\small \textcolor{red}{$\bftheta\in\R^{5\times 5}$ convolution kernel}};
 			\node at (+2.4,+2.1){\small$\bfz\in\R^{28\times 28}$ output features};
 			\draw[->,red,thick] (0.3,-.5 ) edge (0.3,-2);
 		\end{tikzpicture}
@@ -163,39 +163,39 @@ Possible remedies:
 \end{frame}
 
 \begin{frame}\frametitle{Convolutions in 1D}
-	Let $y, z, \theta:\R \to \R$, $z : \R\to\R$ be continuous functions then
+	Let $y, z, \bftheta:\R \to \R$, $z : \R\to\R$ be continuous functions then
 	\begin{equation*}
-		z(x) = (\theta * y)(x) = \int_{-\infty}^\infty \theta(x-t) y(t) dt.
+		z(x) = (\bftheta * y)(x) = \int_{-\infty}^\infty \bftheta(x-t) y(t) dt.
 	\end{equation*}
-	Assume $\theta(x) \neq 0$ only in interval $[-a,a]$ (compact support).
+	Assume $\bftheta(x) \neq 0$ only in interval $[-a,a]$ (compact support).
 	
 	\bigskip
 	\pause
 	
 	A few properties
 	\begin{itemize}
-	\item $ \theta * y = {\cal F}^{-1}(({\cal F} \theta) ({\cal F} y))$, ${\cal F}$ is Fourier transform
-	\item $ \theta * y =  y * \theta$ 
+	\item $ \bftheta * y = {\cal F}^{-1}(({\cal F} \bftheta) ({\cal F} y))$, ${\cal F}$ is Fourier transform
+	\item $ \bftheta * y =  y * \bftheta$ 
 	\end{itemize}
 	
 	
 \end{frame}	
 
 \begin{frame}\frametitle{Discrete Convolutions in 1D}
-	Let $\theta \in\R^{2k+1}$ be stencil, $\bfy \in \R^{n_f}$ grid function
+	Let $\bftheta \in\R^{2k+1}$ be stencil, $\bfy \in \R^{n_f}$ grid function
 \begin{equation*}
-		\bfz_i = (\theta * \bfy)_i = \sum_{j=-k}^k \theta_{j} \bfy_{i-1}.
+		\bfz_i = (\bftheta * \bfy)_i = \sum_{j=-k}^k \bftheta_{j} \bfy_{i-1}.
 	\end{equation*}
 	
 	\bigskip
 	\pause
 
-	 Example: Discretize $\theta \in \R^3$ (non-zeros only), $\bfy,\bfz \in \R^4$ on regular grid
+	 Example: Discretize $\bftheta \in \R^3$ (non-zeros only), $\bfy,\bfz \in \R^4$ on regular grid
 	 \begin{align*}
-	 	\bfz_1 & = \theta_3 \textcolor{red}{\bfw_1} + \theta_2 \bfx_1 + \bftheta_1 \bfx_2 \\
-	 	\bfz_2 & = \theta_3 \bfx_1 + \theta_2 \bfx_2 + \bftheta_1 \bfx_3 \\
-	 	\bfz_3 & = \theta_3 \bfx_2 + \theta_2 \bfx_3 + \bftheta_1 \bfx_4 \\
-	 	\bfz_4 & = \theta_3 \bfx_3 + \theta_2 \bfx_4 + \bftheta_1 \textcolor{red}{\bfw_2}
+	 	\bfz_1 & = \bftheta_3 \textcolor{red}{\bfw_1} + \bftheta_2 \bfx_1 + \bftheta_1 \bfx_2 \\
+	 	\bfz_2 & = \bftheta_3 \bfx_1 + \bftheta_2 \bfx_2 + \bftheta_1 \bfx_3 \\
+	 	\bfz_3 & = \bftheta_3 \bfx_2 + \bftheta_2 \bfx_3 + \bftheta_1 \bfx_4 \\
+	 	\bfz_4 & = \bftheta_3 \bfx_3 + \bftheta_2 \bfx_4 + \bftheta_1 \textcolor{red}{\bfw_2}
 	 \end{align*}
 	 where $\textcolor{red}{\bfw_1, \bfw_2}$ are used to implement different boundary conditions (right choice? depends \ldots).
 \end{frame}
@@ -214,10 +214,10 @@ Possible remedies:
 		=
 		\left( 
 		\begin{array}{rrrrrrr}
-			\theta_3 & \theta_2 & \theta_1 &          &          &           \\
-			         & \theta_3 & \theta_2 & \theta_1 &          &           \\
-			         &          & \theta_3 & \theta_2 & \theta_1 &           \\
-			         &          &          & \theta_3 & \theta_2 & \theta_1 \\
+			\bftheta_3 & \bftheta_2 & \bftheta_1 &          &          &           \\
+			         & \bftheta_3 & \bftheta_2 & \bftheta_1 &          &           \\
+			         &          & \bftheta_3 & \bftheta_2 & \bftheta_1 &           \\
+			         &          &          & \bftheta_3 & \bftheta_2 & \bftheta_1 \\
 		\end{array}
 		\right)
 		\left( 
@@ -247,10 +247,10 @@ Possible remedies:
 		=
 		\left( 
 		\begin{array}{rrrrr}
-			\theta_2 & \theta_1 &          &           \\
-			\theta_3 & \theta_2 & \theta_1 &           \\
-			         & \theta_3 & \theta_2 & \theta_1  \\
-			         &          & \theta_3 & \theta_2 \\
+			\bftheta_2 & \bftheta_1 &          &           \\
+			\bftheta_3 & \bftheta_2 & \bftheta_1 &           \\
+			         & \bftheta_3 & \bftheta_2 & \bftheta_1  \\
+			         &          & \bftheta_3 & \bftheta_2 \\
 		\end{array}
 		\right)
 		\left( 
@@ -282,10 +282,10 @@ Possible remedies:
 		=
 		\left( 
 		\begin{array}{rrrr}
-			        \theta_2 & \theta_1 &          & \theta_3  \\
-			        \theta_3 & \theta_2 & \theta_1 &           \\
-			                 & \theta_3 & \theta_2 & \theta_1  \\
-			        \theta_1 &          & \theta_3 & \theta_2  \\
+			        \bftheta_2 & \bftheta_1 &          & \bftheta_3  \\
+			        \bftheta_3 & \bftheta_2 & \bftheta_1 &           \\
+			                 & \bftheta_3 & \bftheta_2 & \bftheta_1  \\
+			        \bftheta_1 &          & \bftheta_3 & \bftheta_2  \\
 		\end{array}
 		\right)
 		\left( 
@@ -303,16 +303,16 @@ Possible remedies:
 	
 	An attractive property of a circulant matrix is that we can efficiently compute its eigendecomposition
 	$$
-		\bfK(\theta) = \bfF^* {\rm diag}(\lambda) \bfF
+		\bfK(\bftheta) = \bfF^* {\rm diag}(\lambda) \bfF
 	$$ 
 	where $\bfF$ is the discrete Fourier transform and the eigenvalues, $\lambda \in {\mathbb{C}}^4$, can be computed using first column
 	$$
-		\lambda =   \bfF( \bfK(\theta) \bfu_1) \quad \text{ where} \quad \bfu_1 = (1,0,0,0)^\top.
+		\lambda =   \bfF( \bfK(\bftheta) \bfu_1) \quad \text{ where} \quad \bfu_1 = (1,0,0,0)^\top.
 	$$ 	
 \end{frame}
 
 \begin{frame}\frametitle{Coding: 1D Convolution using FFTs}
-	Let $\theta \in \R^3$ be some stencil and $n_f = m = 16$ 
+	Let $\bftheta \in \R^3$ be some stencil and $n_f = m = 16$ 
 \begin{enumerate}
 	\item build a sparse matrix $\bfK$ for computing the convolution with periodic boundary conditions. 
 	Hint: \texttt{spdiags}
@@ -330,7 +330,7 @@ Possible remedies:
 \begin{frame}\frametitle{Derivatives of 1D Convolution - 1}
 	Recall that we need a way to compute
 	$$
-		\bfJ_\theta (\bfK(\theta)\bfY) \bfv \quad \text{ and } \quad \bfJ_\theta (\bfK(\theta)\bfY)^\top \bfw, \quad (\bfJ_\theta \in\R^{m \times p})
+		\bfJ_\bftheta (\bfK(\bftheta)\bfY) \bfv \quad \text{ and } \quad \bfJ_\bftheta (\bfK(\bftheta)\bfY)^\top \bfw, \quad (\bfJ_\bftheta \in\R^{m \times p})
 	$$
 	(note that we put $\bfY$ inside the bracket to avoid tensors)
 
@@ -340,15 +340,15 @@ Possible remedies:
 	Assume single example, $\bfy$. Since we have periodic boundary conditions
 	\begin{equation*}
 		\begin{split}
-	   \bfK(\theta)\bfy & =  {\rm real}(\bfF^*( \lambda(\theta) \odot \bfF \bfy)) \\
-	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \lambda(\theta)), \quad 		\lambda(\theta) = \bfF(\bfK(\theta)\bfu_1).
+	   \bfK(\bftheta)\bfy & =  {\rm real}(\bfF^*( \lambda(\bftheta) \odot \bfF \bfy)) \\
+	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \lambda(\bftheta)), \quad 		\lambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
 		\end{split}
 	\end{equation*}
 	\pause
 	
-	Need to differentiate eigenvalues w.r.t. $\theta$. Note linearity
+	Need to differentiate eigenvalues w.r.t. $\bftheta$. Note linearity
 	$$
-		\bfK(\theta) \bfu_1 = \bfQ \theta, \quad \bfQ = ?
+		\bfK(\bftheta) \bfu_1 = \bfQ \bftheta, \quad \bfQ = ?
 	$$
 	
 \end{frame}
@@ -356,16 +356,16 @@ Possible remedies:
 \begin{frame} \frametitle{Derivatives of 1D Convolution - 2}
 	Assume we have
 	$$
-		\bfK(\theta) \bfy  = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bfF \bfQ \theta))
+		\bfK(\bftheta) \bfy  = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bfF \bfQ \bftheta))
 	$$
 	Then mat-vecs with Jacobian are easy to compute
 	$$
-		\bfJ_\theta ( \bfK(\theta) \bfy) \bfv = {\rm real}( \bfF^* ({\rm diag}(\bfF \bfy)  \bfF \bfQ \bfv))
+		\bfJ_\bftheta ( \bfK(\bftheta) \bfy) \bfv = {\rm real}( \bfF^* ({\rm diag}(\bfF \bfy)  \bfF \bfQ \bfv))
 	$$
 	\pause
 	and (note that $\bfF^\top = \bfF$ and $(\bfF^*)^\top = \bfF^*$)
 	$$
-		\bfJ_\theta (\bfK(\theta) \bfy)^\top \bfw = {\rm real}(\bfQ^\top \bfF  {\rm diag}(\bfF \bfy)\bfF^* \bfw)
+		\bfJ_\bftheta (\bfK(\bftheta) \bfy)^\top \bfw = {\rm real}(\bfQ^\top \bfF  {\rm diag}(\bfF \bfy)\bfF^* \bfw)
 	$$
 	
 	\bigskip
@@ -382,28 +382,28 @@ Possible remedies:
 	
 	Let $n>1$. In MATLAB must avoid for-loop over examples. 
 	$$
-		\bfK(\theta)\bfY =  {\rm real}(\bfF^* {\rm diag}(\lambda(\theta)) \bfF \bfY)
+		\bfK(\bftheta)\bfY =  {\rm real}(\bfF^* {\rm diag}(\lambda(\bftheta)) \bfF \bfY)
 	$$
 	$$
-		 \bfK(\theta)^\top\bfZ =  {\rm real}(\bfF {\rm diag}(\lambda(\theta)) \bfF^* \bfZ)
+		 \bfK(\bftheta)^\top\bfZ =  {\rm real}(\bfF {\rm diag}(\lambda(\bftheta)) \bfF^* \bfZ)
 	$$
 	These require almost no change to the code. For the Jacobians, we need to re-order slightly and get
 	$$
-		\bfJ_\theta (\bfK(\theta)\bfY) = {\rm real}(\bfF^* {\rm diag}(\bfF \bfQ v) \bfF \bfY)
+		\bfJ_\bftheta (\bfK(\bftheta)\bfY) = {\rm real}(\bfF^* {\rm diag}(\bfF \bfQ v) \bfF \bfY)
 	$$
 	and for the transpose we need to sum over examples
 	$$
-		\bfJ_\theta(\bfK(\theta)\bfY)^\top\bfW = {\rm real}(\bfQ^\top \bfF  ((\bfF\bfY) \odot (\bfF^* \bfW) \bfe_n))
+		\bfJ_\bftheta(\bfK(\bftheta)\bfY)^\top\bfW = {\rm real}(\bfQ^\top \bfF  ((\bfF\bfY) \odot (\bfF^* \bfW) \bfe_n))
 	$$
 	
 \end{frame}
 
 \begin{frame}\frametitle{Extension 2: 2D Convolution}
-	Example: Let $\bfy,\bfz,\theta \in \R^{3\times 3}$ and assume periodic BCs then
+	Example: Let $\bfy,\bfz,\bftheta \in \R^{3\times 3}$ and assume periodic BCs then
 	\begin{align*}
-			\bfz_{21}   & = \theta_{33} \bfy_{13} + \theta_{32} \bfy_{11}+ \theta_{31} \bfy_{12} \\
-				   	    & + \theta_{23}\bfy_{23} + \theta_{22} \bfy_{21} + \theta_{21} \bfy_{22}\\
-				   	    & + \theta_{13}\bfy_{33} + \theta_{12} \bfy_{31} + \theta_{11} \bfy_{32}
+			\bfz_{21}   & = \bftheta_{33} \bfy_{13} + \bftheta_{32} \bfy_{11}+ \bftheta_{31} \bfy_{12} \\
+				   	    & + \bftheta_{23}\bfy_{23} + \bftheta_{22} \bfy_{21} + \bftheta_{21} \bfy_{22}\\
+				   	    & + \bftheta_{13}\bfy_{33} + \bftheta_{12} \bfy_{31} + \bftheta_{11} \bfy_{32}
 	\end{align*}
 	\pause
 	In matrix form, this gives
@@ -425,15 +425,15 @@ Possible remedies:
 		= 
 		\left(
 			\begin{array}{rrr|rrr|rrr}
-				\invisible<beamer|-2>{\theta_{22} & \theta_{12} & \theta_{32} & \theta_{21} & \theta_{11} & \theta_{31} & \theta_{23} & \theta_{13} & \theta_{33}\\}
-				\theta_{32} & \theta_{22} & \theta_{12} & \theta_{31} & \theta_{21} & \theta_{11} & \theta_{33} & \theta_{23} & \theta_{13}\\
-				\invisible<beamer|-2>{\theta_{12} & \theta_{32} & \theta_{22} & \theta_{11} & \theta_{31} & \theta_{21} & \theta_{13} & \theta_{33} & \theta_{23}\\ \hline
-				\theta_{23} & \theta_{13} & \theta_{33} & \theta_{22} & \theta_{12} & \theta_{32}  & \theta_{21} & \theta_{11} & \theta_{31}\\
-				\theta_{33} & \theta_{23} & \theta_{13} & \theta_{32} & \theta_{22} & \theta_{12}  & \theta_{31} & \theta_{21} & \theta_{11}\\
-				\theta_{13} & \theta_{33} & \theta_{23} & \theta_{12} & \theta_{32} & \theta_{22}  & \theta_{11} & \theta_{31} & \theta_{21}\\ \hline
-				\theta_{21} & \theta_{11} & \theta_{31} & \theta_{23} & \theta_{13} & \theta_{33}  & \theta_{22} & \theta_{12} & \theta_{32}\\
-				\theta_{31} & \theta_{21} & \theta_{11} & \theta_{33} & \theta_{23} & \theta_{13}  & \theta_{32} & \theta_{22} & \theta_{12}\\
-				\theta_{11} & \theta_{31} & \theta_{21} & \theta_{13} & \theta_{33} & \theta_{23}  & \theta_{12} & \theta_{32} & \theta_{22}}\\ 			\end{array}
+				\invisible<beamer|-2>{\bftheta_{22} & \bftheta_{12} & \bftheta_{32} & \bftheta_{21} & \bftheta_{11} & \bftheta_{31} & \bftheta_{23} & \bftheta_{13} & \bftheta_{33}\\}
+				\bftheta_{32} & \bftheta_{22} & \bftheta_{12} & \bftheta_{31} & \bftheta_{21} & \bftheta_{11} & \bftheta_{33} & \bftheta_{23} & \bftheta_{13}\\
+				\invisible<beamer|-2>{\bftheta_{12} & \bftheta_{32} & \bftheta_{22} & \bftheta_{11} & \bftheta_{31} & \bftheta_{21} & \bftheta_{13} & \bftheta_{33} & \bftheta_{23}\\ \hline
+				\bftheta_{23} & \bftheta_{13} & \bftheta_{33} & \bftheta_{22} & \bftheta_{12} & \bftheta_{32}  & \bftheta_{21} & \bftheta_{11} & \bftheta_{31}\\
+				\bftheta_{33} & \bftheta_{23} & \bftheta_{13} & \bftheta_{32} & \bftheta_{22} & \bftheta_{12}  & \bftheta_{31} & \bftheta_{21} & \bftheta_{11}\\
+				\bftheta_{13} & \bftheta_{33} & \bftheta_{23} & \bftheta_{12} & \bftheta_{32} & \bftheta_{22}  & \bftheta_{11} & \bftheta_{31} & \bftheta_{21}\\ \hline
+				\bftheta_{21} & \bftheta_{11} & \bftheta_{31} & \bftheta_{23} & \bftheta_{13} & \bftheta_{33}  & \bftheta_{22} & \bftheta_{12} & \bftheta_{32}\\
+				\bftheta_{31} & \bftheta_{21} & \bftheta_{11} & \bftheta_{33} & \bftheta_{23} & \bftheta_{13}  & \bftheta_{32} & \bftheta_{22} & \bftheta_{12}\\
+				\bftheta_{11} & \bftheta_{31} & \bftheta_{21} & \bftheta_{13} & \bftheta_{33} & \bftheta_{23}  & \bftheta_{12} & \bftheta_{32} & \bftheta_{22}}\\ 			\end{array}
 		\right)
 		\left(
 			\begin{array}{r}
@@ -458,13 +458,13 @@ Possible remedies:
 \begin{frame}\frametitle{Extension 2: 2D Convolution using FFTs}	
 	Since the 2D convolution operator is BCCB, we still have that
 	\begin{equation*}
-		\bfK(\theta) = \bfF^* {\rm diag}(\lambda(\theta)) \bfF, \quad \lambda(\theta) = \bfF(\bfK(\theta)\bfu_1).
+		\bfK(\bftheta) = \bfF^* {\rm diag}(\lambda(\bftheta)) \bfF, \quad \lambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
 	\end{equation*}
 	Differences:
 	\begin{itemize}
 		\item $\bfF$ and $\bfF^*$ now refer to 2D Fourier transform and its inverse (\texttt{ffft2} and \texttt{ifft2}), respectively. 
 		
-		\item need to find an efficient way to build first column of $\bfK(\theta)$ and encode that using $\bfQ$.
+		\item need to find an efficient way to build first column of $\bfK(\bftheta)$ and encode that using $\bfQ$.
 	\end{itemize}
 	
 	All else stays the same and extends also to higher dimensions (like for videos).
@@ -498,10 +498,10 @@ Possible remedies:
 		= 
 		\left(
 		\begin{array}{rrr}
-			\bfK^{11}(\theta^{11}) &  \bfK^{12}(\theta^{12}) & \bfK^{11}(\theta^{13})\\
-			\bfK^{21}(\theta^{21}) &  \bfK^{22}(\theta^{22}) & \bfK^{21}(\theta^{23})\\
-			\bfK^{31}(\theta^{31}) &  \bfK^{32}(\theta^{32}) & \bfK^{31}(\theta^{33})\\
-			\bfK^{41}(\theta^{41}) &  \bfK^{42}(\theta^{42}) & \bfK^{41}(\theta^{43})\\
+			\bfK^{11}(\bftheta^{11}) &  \bfK^{12}(\bftheta^{12}) & \bfK^{13}(\bftheta^{13})\\
+			\bfK^{21}(\bftheta^{21}) &  \bfK^{22}(\bftheta^{22}) & \bfK^{23}(\bftheta^{23})\\
+			\bfK^{31}(\bftheta^{31}) &  \bfK^{32}(\bftheta^{32}) & \bfK^{33}(\bftheta^{33})\\
+			\bfK^{41}(\bftheta^{41}) &  \bfK^{42}(\bftheta^{42}) & \bfK^{43}(\bftheta^{43})\\
 		\end{array}
 		\right)
 		\left(
@@ -512,7 +512,7 @@ Possible remedies:
 			\end{array}
 		\right),
 	$$
-	where $\bfK^{ij}$ is a 2D convolution operator with stencil $\theta^{ij}$
+	where $\bfK^{ij}$ is a 2D convolution operator with stencil $\bftheta^{ij}$
 	
 \end{frame}
 

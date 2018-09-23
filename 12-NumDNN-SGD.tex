@@ -29,7 +29,7 @@ For deep networks, problem is usually not convex and has many local minimum
 \begin{frame}[fragile]\frametitle{Review - Optimization Techniques}
 
 So far, we used deterministic gradient-based methods
-$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1} \grad F(\bftheta_k,\bfY), \quad  \nabla F(\theta,\bfY) = \frac1n  \sum_{i=1}^n \nabla f_i(\theta, \bfy_i)$$
+$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1} \grad F(\bftheta_k,\bfY), \quad  \nabla F(\bftheta,\bfY) = \frac1n  \sum_{i=1}^n \nabla f_i(\bftheta, \bfy_i)$$
 
 \smallskip 
 \pause
@@ -37,7 +37,7 @@ $$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1} \grad F(\bftheta_k,\bfY), \qu
 Examples: 
 \begin{itemize}
 	\item steepest descent: $ \bfA_k = \bfI$
-	\item Newton: $\bfA_k = \nabla^{2} F(\theta,\bfY) = \sum_{i=1}^N \nabla^{2} f_i(\theta, \bfy_i)$
+	\item Newton: $\bfA_k = \nabla^{2} F(\bftheta,\bfY) = \sum_{i=1}^N \nabla^{2} f_i(\bftheta, \bfy_i)$
 \end{itemize}
 
 \bigskip

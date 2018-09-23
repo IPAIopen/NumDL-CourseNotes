@@ -22,14 +22,14 @@
 	
 	\bigskip
 	
-	Since output of our classifier $f(\bfy,\theta)$ is supposed to be probability, use logistic sigmoid
+	Since output of our classifier $f(\bfy,\bftheta)$ is supposed to be probability, use logistic sigmoid
 	$$
-		\bfc(\bfy,\theta) = \frac{1}{1 + \exp\left(-f(\bfy,\theta)\right)}.
+		\bfc(\bfy,\bftheta) = \frac{1}{1 + \exp\left(-f(\bfy,\bftheta)\right)}.
 	$$
 	
 	\bigskip
 	
-	Example (Linear Classification): If $f(\bfy,\theta)$ is a linear function (adding bias is easy), $\theta = \bfw \in \R^{n_f}$ and
+	Example (Linear Classification): If $f(\bfy,\bftheta)$ is a linear function (adding bias is easy), $\bftheta = \bfw \in \R^{n_f}$ and
 	$$
 		\bfc(\bfy,\bfw) = \frac{1}{1 + \exp(-\bfw^\top\bfy)}.
 	$$

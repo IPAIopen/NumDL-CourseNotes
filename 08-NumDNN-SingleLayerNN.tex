@@ -46,7 +46,7 @@ About this optimization problem:
 	\begin{center}
 		\includegraphics[width=.6\textwidth]{images/nonConvexitySingleLayer}
 		
-		(see \texttt{E08SingleLayerNN.m})
+		(see \texttt{ESingleLayer\_PlotObjective.m})
 	\bigskip
 	
 	Expect worse when number of layers grows!
@@ -223,11 +223,11 @@ function[Z,JKt,Jbt,JYt,JK,Jb,JY] = singleLayer(K,b,Y)
 \begin{frame}
 	\frametitle{Gauss-Newton Method}
 	
-	\textbf{Goal:} Accelerate convergence by using curvature information.
+	\textbf{Goal:} Use curvature information to accelerate convergence
 	$$
 	\nabla_{\bfK} E(\bfK,b,\bfW) =  (\bfJ_\bfK \bfZ)^\top \nabla_\bfZ E(\bfW\sigma(\bfK \bfY+b),\bfC),
 	$$
-	Denoting $\bfJ_\bfK \bfZ = \nabla_{\bfK} \sigma(\bfK \bfY+b)^\top$ this means that Hessian is
+	where $\bfJ_\bfK \bfZ = \nabla_{\bfK} \sigma(\bfK \bfY+b)^\top$. This means that Hessian is
 	\begin{equation*}
 		\begin{split}
 	\nabla_{\bfK}^2 E(\bfK) &  = (\bfJ_{\bfK}\bfZ)^\top  \nabla_\bfZ^2 E(\bfC,\bfZ,\bfW) \bfJ_{\bfK}\bfZ\\
@@ -243,7 +243,7 @@ function[Z,JKt,Jbt,JYt,JK,Jb,JY] = singleLayer(K,b,Y)
 		\item small if transformation is roughly linear or close to solution (easy to see for least-squares)
 	\end{itemize}
 	\begin{center}
-		\textcolor{red}{inexact Hessian $+$ inexact solve: add line search!}
+		\textcolor{red}{do the same for $\bfb$ and use full Hessian for $\bfW$ $\leadsto$ ignore coupling!}
 	\end{center}	
 \end{frame}
 
