@@ -11,146 +11,18 @@
 
 
 \makebeamertitle
-\section{Course Overview} 
-\label{sec:course_overview}
-\begin{frame}
-\frametitle{Course Overview}
-\begin{itemize}
-\item Module 1: Linear Models
-\begin{enumerate}
-	\setcounter{enumi}{1}	
-\item Linear Models and Least-Squares
-\item Iterative Methods for Least-Squares
-\item Linear Models for Classification
-\item Newton's Method for Classification
-\item Regularization for Image Classification
-\end{enumerate}
-\end{itemize}
-
-\end{frame}
-\begin{frame}
-\frametitle{Course Overview}
-
-\begin{itemize}
-\item Module 2: Neural Networks
-\begin{enumerate}
-	\setcounter{enumi}{6}
-\item Introduction to Nonlinear Models
-\item Single Layer Neural Networks
-\item Training Algorithms for Single Layer Neural Networks
-\item Introduction to Deep Neural Networks
-\item Differentiating Deep Neural Networks
-\item Stochastic Gradient Descent and Variants
-\end{enumerate}
-\item Module 3: Parametric Models/Convolution Neural Networks
-\begin{enumerate}
-	\setcounter{enumi}{12}
-	\item Introduction to Parametric Models
-	\item Application of CNN: Image Segmentation
-	\item CNN and their relation to PDEs
-\end{enumerate}
-\end{itemize}
-\end{frame}
-
-
-
-
-% section course_overview (end)
-
 
 \section{Introduction to (Deep) Neural Networks} % (fold)
 \label{sec:introduction_to_deep_neural_networks}
 
-\begin{frame}\frametitle{Deep Neural Networks: History}
 
-\begin{itemize}
-	\item Neural Networks with a particular (deep) architecture
-    \item Exist for a long time (70's and even earlier)~\cite{Rosenblatt1958,Rumelhart1986,LeCun1990}
-    \item Recent revolution - computational power and lots of data~\cite{bengio2009learning,RainaEtAl2009,lecun2015deep}
-    \item Can perform very well when trained with lots of data
-    \item Applications
-    \begin{itemize}
-    \item Image recognition~~\cite{hinton2012deep,KrizhevskySutskeverHinton2012,lecun2015deep}, segmentation, natural language processing~\cite{BordesEtAl2014,CollobertEtAl2011,  JeanEtAl2014}
-    \end{itemize}
-
-
-    \pause
-
-\item A few recent news articles:
-
- \begin{itemize}
-    \item
-{Apple Is Bringing the AI Revolution to Your iPhone, WIRED 2016}
-\item
-{Why Deep Learning Is Suddenly Changing Your Life,  FORTUNE 2016}
-\item Data Scientist: Sexiest Job of the 21st Century, Harvard Business Rev ’17
-\end{itemize}
-
-\end{itemize}
-\end{frame}
-
-\begin{frame}\frametitle{DNN - A Quick Overview - 1}
-
-Neural networks are data interpolator/classifier when the underlying model
-is unknown.
-
-\bigskip
-
-A generic way to write it is
-$$ \bfc = f(\bfy,\bftheta). $$
-
-
-\begin{itemize}
-\item the function $f$ is the computational model
-\item $\bfy\in\R^{n_f}$ is the input data (e.g., an image)
-\item $\bfc\in\R^{n_c}$ is the output (e.g. class of the image)
-\item $\bftheta\in\R^{n_p}$ are parameters of the model $f$
-\end{itemize}
-
-In supervised learning we have examples $\{(\bfy_j,\bfc_j) \ : \ j=1,\ldots,n\}$ and the goal
-is to estimate or ``learn'' the parameters $\bftheta$.
-
-\end{frame}
-
-\begin{frame}
-	\frametitle{DNN - A Quick Overview - 2}
-	
-	\begin{center}
-		\begin{columns}
-			\column{.4\textwidth}
-				\only<1>{\includegraphics[width=\textwidth]{NNpic}}\only<beamer|2->{\includegraphics[width=\textwidth]{NNpic2}}
-			\column{.6\textwidth}
-			\invisible<beamer|1>{ $ \left\{ 
-				\begin{array}{rcl}
-					\bfy_{l+1} &=& \sigma( \bfK_l \bfy_l + \bfb_l) \\
-					\bfy_{l+1} &=& \bfy_l + \sigma( \bfK_l \bfy_l + \bfb_l) \\	
-					\bfy_{l+1} &=& \bfy_l + \sigma\left( \bfL_{l}\sigma( \bfK_{l} \bfy_l + \bfb_{l})\right) \\	
-					&\vdots			&
-				\end{array}
-			\right.$
-			
-			}
-		
-		\end{columns}
-	\end{center}
-		
-		\vspace{5mm}
-		\invisible<beamer|1>{
-		Here:
-		\begin{itemize}
-			\item $l=0,1,2,\ldots,N$ is the layer
-			\item $\sigma : \R \to \R$ is the activation function
-			\item $\bfy_0 = \bfy\in\R^{n_f}$ is the input data (e.g., an image)
-			\item $\bfc\in\R^{n_c}$ is the output (e.g. class of the image)
-			\item $\bfL_l, \bfK_l, \bfb_l$ are parameters of the model $f$
-		\end{itemize}}
-		\end{frame}
 \begin{frame}\frametitle{Learning From Data: The Core of Science - 1}
 
 
 Given inputs and outputs, how to choose $f$?
 
 \bigskip
+
 
 \textbf{Option 1} (Fundamental(?) understanding): For example, Galileo's law of motion
 $$ x(t) = \hf g t^2, $$
@@ -223,7 +95,175 @@ Hard to know what their limitations are.
 
 \end{frame}
 
+\begin{frame}\frametitle{Deep Neural Networks: History}
 
+\begin{itemize}
+	\item Neural Networks with a particular (deep) architecture
+    \item Exist for a long time (70's and even earlier)~\cite{Rosenblatt1958,Rumelhart1986,LeCun1990}
+    \item Recent revolution - computational power and lots of data~\cite{bengio2009learning,RainaEtAl2009,lecun2015deep}
+    \item Can perform very well when trained with lots of data
+    \item Applications
+    \begin{itemize}
+    \item Image recognition~~\cite{hinton2012deep,KrizhevskySutskeverHinton2012,lecun2015deep}, segmentation, natural language processing~\cite{BordesEtAl2014,CollobertEtAl2011,  JeanEtAl2014}
+    \end{itemize}
+
+
+    \pause
+
+\item A few recent news articles:
+
+ \begin{itemize}
+    \item
+{Apple Is Bringing the AI Revolution to Your iPhone, WIRED 2016}
+\item
+{Why Deep Learning Is Suddenly Changing Your Life,  FORTUNE 2016}
+\item Data Scientist: Sexiest Job of the 21st Century, Harvard Business Rev ’17
+\end{itemize}
+
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Learning Objective: Demystify Deep Learning}
+	\begin{center}
+		\includegraphics[width=.9\textwidth]{DarkSecret}
+	\end{center}
+	
+	Learning objectives of this minicourse:
+	\begin{itemize}
+		\item look under the hood of some deep learning examples
+		\item describe deep learning mathematically (see also~\cite{HighamHigham2018})
+		\item expose numerical challenges / approaches to improve DL
+	\end{itemize}
+\end{frame}
+
+\begin{frame}\frametitle{DNN - A Quick Overview - 1}
+
+Neural networks are data interpolator/classifier when the underlying model
+is unknown.
+
+\bigskip
+
+A generic way to write it is
+$$ \bfc = f(\bfy,\bftheta). $$
+
+
+\begin{itemize}
+\item the function $f$ is the computational model
+\item $\bfy\in\R^{n_f}$ is the input data (e.g., an image)
+\item $\bfc\in\R^{n_c}$ is the output (e.g. class of the image)
+\item $\bftheta\in\R^{n_p}$ are parameters of the model $f$
+\end{itemize}
+
+In supervised learning we have examples $\{(\bfy_j,\bfc_j) \ : \ j=1,\ldots,n\}$ and the goal
+is to estimate or ``learn'' the parameters $\bftheta$.
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{DNN - A Quick Overview - 2}
+	
+	\begin{center}
+		\begin{columns}
+			\column{.4\textwidth}
+				\only<1>{\includegraphics[width=\textwidth]{NNpic}}\only<beamer|2->{\includegraphics[width=\textwidth]{NNpic2}}
+			\column{.6\textwidth}
+			\invisible<beamer|1>{ $ \left\{ 
+				\begin{array}{rcl}
+					\bfy_{l+1} &=& \sigma( \bfK_l \bfy_l + \bfb_l) \\
+					\bfy_{l+1} &=& \bfy_l + \sigma( \bfK_l \bfy_l + \bfb_l) \\	
+					\bfy_{l+1} &=& \bfy_l + \sigma\left( \bfL_{l}\sigma( \bfK_{l} \bfy_l + \bfb_{l})\right) \\	
+					&\vdots			&
+				\end{array}
+			\right.$
+			
+			}
+		
+		\end{columns}
+	\end{center}
+		
+		\vspace{5mm}
+		\invisible<beamer|1>{
+		Here:
+		\begin{itemize}
+			\item $l=0,1,2,\ldots,N$ is the layer
+			\item $\sigma : \R \to \R$ is the activation function
+			\item $\bfy_0 = \bfy\in\R^{n_f}$ is the input data (e.g., an image)
+			\item $\bfc\in\R^{n_c}$ is the output (e.g. class of the image)
+			\item $\bfL_l, \bfK_l, \bfb_l$ are parameters of the model $f$
+		\end{itemize}}
+		\end{frame}
+
+\begin{frame}\frametitle{{Machine Learning in 3 slides}}
+
+{\em Machine learning (ML) is the scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead. (wiki)}
+
+\bigskip\pause
+
+Two common tasks in machine learning:
+\begin{itemize}
+\item given data, cluster it and detect patterns in it (unsupervised learning)
+\item given data and labels, find a functional relation between them (supervised learning)
+\end{itemize}
+
+
+
+\end{frame}
+
+\begin{frame}\frametitle{{Machine Learning in 3 slides}}
+	
+\begin{center}
+	\begin{tabular}{ccc}
+		unsupervised & semi-supervised \\
+		\includegraphics[width=0.4\textwidth]{unsupervised_data}&
+		\includegraphics[width=0.4\textwidth]{unsupervised_semi}		
+	\end{tabular}
+\end{center}
+
+Unsupervised learning - given the data set $\bfY = [\bfy_1,\ldots,\bfy_n]$
+cluster the data into "similar" groups (labels).
+ 
+\bigskip
+
+\begin{itemize}
+\item helps find hidden patterns
+\item often explorative and open-ended
+\end{itemize}
+
+\bigskip
+
+Semisupervised - label the data based on a few examples
+
+
+\end{frame}
+
+\begin{frame}\frametitle{{Machine Learning in 3 slides}}
+	
+	\begin{center}
+		\begin{tabular}{cc}
+			training data & trained model\\
+			\includegraphics[width=0.4\textwidth]{PeaksStable-train}
+			&
+			\includegraphics[width=0.4\textwidth]{PeaksStable-train-cont}
+			
+		\end{tabular}
+	\end{center}
+	
+
+Supervised learning - given the data set $\bfY = [\bfy_1,\ldots,\bfy_n] \in {\cal Y}$
+and their labels $\bfC = [\bfc_1,\ldots,\bfc_n] \in {\cal C}$, find the relation $f:{\cal Y}\rightarrow {\cal C}$
+ 
+\bigskip
+
+\begin{itemize}
+\item models range in complexity
+\item older models based on support vector machines (SVM) and kernel methods
+\item recently, deep neural networks (DNNs) dominate
+\end{itemize}
+
+
+\end{frame}
 
 \begin{frame}\frametitle{Generalization - 1}
 
@@ -395,9 +435,9 @@ Possible features: Color, neighbors, edges ...
 
 Simpler setup
 \begin{itemize}
-\item data, $\bfy$ is the RGB value of the pixel (and its neighbors?)  
-\item $\bfc$ is a labeled pixel
-\item The map $\bfc  = f(\bfy,\bftheta)$ 
+\item input: $\bfy$ is the RGB value of the pixel (and its neighbors?)  
+\item output: $\bfc$ is a labeled pixel
+\item goal:  map $\bfc  = f(\bfy,\bftheta)$ 
 \end{itemize}
 
 \begin{tabular}{cc}

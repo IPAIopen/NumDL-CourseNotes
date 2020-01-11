@@ -1,0 +1,94 @@
+\documentclass[12pt,fleqn]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+\title[Intro]{Course Overview}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+
+\begin{document}
+
+
+\makebeamertitle
+\section{Course Overview} 
+\label{sec:course_overview}
+\begin{frame}
+\frametitle{Part 1: Shallow Models}
+\begin{enumerate}
+\item Semisupervised Learning
+\begin{itemize}
+	\item Numerics: Sparse linear algebra, eigenvalue problems
+\end{itemize}
+\item Linear Least-Squares
+\begin{itemize}
+	\item Numerics: QR, SVD, steepest descent, iterative solvers
+\end{itemize}
+\item Linear Classification
+\begin{itemize}
+	\item Numerics: Convex optimization, Newton 
+\end{itemize}
+\item Single Layer Neural Networks
+\begin{itemize}
+	\item Reading/Presentation: \cite{HuangEtAl2006} 
+	\item Numerics: Stochastic optimization, Gauss-Newton
+\end{itemize}
+\item Convolutional Neural Nets
+\begin{itemize}
+	\item Reading/Presentation: \cite{LeCun1990,GlorotBengio2010} 
+	\item Numerics: Structured matrix computation, PDE-based regularization
+\end{itemize}
+\end{enumerate}
+\end{frame}
+\begin{frame}
+\frametitle{Part 2: Deep Models}
+
+
+\begin{enumerate}
+	\setcounter{enumi}{5}
+\item Multilayer Perceptron
+\begin{itemize}
+	\item Reading/Presentation: \cite{Rumelhart1986} 
+	\item Numerics: Backpropagation
+\end{itemize}
+\item Residual Neural Networks
+\begin{itemize}
+	\item Reading/Presentation: \cite{he2016identity,he2016deep} 
+\end{itemize}
+\item Continuous Models
+\begin{itemize}
+	\item Reading/Presentation: \cite{E2017, ChenEtAl2018} 
+	\item Numerics: ODE theory, time integrators
+\end{itemize}
+\item Optimal Control
+\begin{itemize}
+	\item Reading/Presentation: \cite{GholamiEtAl2019} 
+	\item Numerics: adjoint method, discretize-optimize
+\end{itemize}
+\item Continuous Normalizing Flows
+\begin{itemize}
+	\item Reading/Presentation: \cite{Zhang:2018th,Grathwohl:2018vf}
+	\item Numerics: optimal transport, conservation laws
+\end{itemize}
+\end{enumerate}
+\end{frame}
+
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{unsrt}
+\bibliography{NumDNN}
+
+\end{frame}
+
+% section course_overview (end)
+
+
+
+\end{document}
+
+
+
+
+
+
