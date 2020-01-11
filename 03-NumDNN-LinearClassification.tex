@@ -718,6 +718,203 @@ end
 \end{frame}
 
 
+\section{Intro to Newton's Method} % (fold)
+\label{sec:logistic_regression_and_softmax}
+
+\begin{frame}\frametitle{Newton-like Methods}
+
+Goal: Solve $\min_{\bfW} E(\bfW)$. Consider $k$th iteration. Assume $E$ convex.
+
+\bigskip
+\pause
+
+To find optimal step $\bfD$, use Taylor's theorem
+{\small{
+$$ E(\bfW_k + \bfD) = E(\bfW_k) + \grad E(\bfW_k)^{\top} \bfD +
+\hf \bfD^{\top} \grad^2 E(\bfW_k) \bfD +
+{\cal O}(\|\bfD\|^3)  $$}}
+and differentiate w.r.t $\bfD$ 
+\pause
+to obtain
+$$ \grad^2 E(\bfW_k) \bfD = -\grad E(\bfW_k). $$
+
+\pause
+
+Practical Newton methods (see, e.g., \cite[Ch.7]{NocedalWright2006})
+\begin{itemize}
+\item do not compute $\bfD$ accurately (add line search for safety)
+\item use, e.g., Conjugate Gradient (CG) methods
+\item do not generate $\grad^2 E$ since CG only needs mat-vecs
+\item give quadratic/superlinear/good linear convergence
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Newton-like Methods for Softmax}
+
+Need to compute Hessian $\nabla^2 E$. Recall: 
+\begin{align*}
+	\grad_{\bfW}E &= \frac{1}{n} \left( -\bfC_{\rm obs} + \exp(\bfS) \odot 
+	\left( \bfe_{n_c} \left({\frac {1}{\bfe_{n_c}^\top \exp(\bfS)}}\right)\right) \right)\bfY^\top\\
+              & =  \grad_\bfS E(\bfS) \bfY^\top,
+\end{align*}
+where $\bfS = \bfW \bfY$. 
+\pause
+For Hessian we know 
+$$
+\nabla^2_\bfW E(\bfW) = \bfY \nabla_S^2 E(\bfS) \bfY^\top 
+$$
+
+\pause
+
+Remarks:
+\begin{itemize}
+\item size of $\nabla^2_\bfS E$ is $n_c n \times  n_c n$, typically sparse
+\item size of $\nabla^2_\bfW E$ is $n_c n_f \times n_c n_f$, typically dense
+\item building Hessian can be costly (when $n$ is large)
+\item Hessian is spd since $E$ is convex in $\bfS$
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Hessian of Softmax Function - 1}
+
+Recall
+$$ \grad_\bfS E = \frac{1}{n} \left(-\bfC + \exp(\bfS)  \odot \frac 1 {\bfe_{n_c}\bfe_{n_c}^\top\exp(\bfS)} \right) $$
+
+Let's first vectorize this  $\bfs = {\rm vec}(\bfS)$ and $\bfc = {\rm vec}(\bfC)$
+
+$$ \grad_\bfs E = \frac{1}{n} \left(- \bfc + \exp(\bfs)  \odot \frac{1 }{(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top}))\exp(\bfs)} \right) $$
+
+\bigskip
+\pause
+
+Use product rule
+
+\begin{eqnarray*}
+\nabla^2_\bfs E &=& {\rm diag} \left( {\frac 1 {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)
+\bfJ_\bfs  \exp(\bfs)   +  \\
+&&
+{\rm diag} (\exp (\bfs)) \bfJ_\bfs \left( {\frac 1 {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)\\
+&=& \nabla^2_\bfs E_1 + \nabla^2_\bfs E_2
+\end{eqnarray*}
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Hessian of Softmax Function - 2}
+
+First term is easy
+\begin{eqnarray*}
+\nabla^2_{\bfs} E_1 &=& {\rm diag} \left( {\frac 1 {(\bfI\otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)
+{\rm diag} \left( \exp(\bfs)\right) \\
+&=&
+{\rm diag} \left( {\frac {\exp(\bfs)} {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right) 
+\end{eqnarray*}
+\pause
+\bigskip
+
+
+Reshaped back, a matrix-vector-product with $\bfV \in \R^{n_c \times n_f}$ is
+
+$$ \bfH_1 \bfV =   \left( \left( {\frac {\exp(\bfS)} {\bfe_{n_c}\bfe_{n_c}^\top \exp(\bfS)}} \right) \odot ( \bfV \bfY) \right) \bfY^{\top} $$
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Hessian of Softmax Function - 3}
+	
+$$
+E_2 = {\rm diag} (\exp (\bfs)) \underbrace{\bfJ_\bfs \left( {\frac 1 {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)}_{=:\bfT}.
+$$
+ Using chain rule, we get
+ $$
+ \bfT = - {\rm diag}\left({\frac 1 {\left((\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top} )) \exp(\bfs)}\right)^2}\right) (\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^\top)) {\rm diag}(\exp(s))
+ $$
+
+ \pause\bigskip
+
+ After reshape the matrix-vector-product with $\bfV \in \R^{n_f \times n_c}$ is
+
+ \begin{align*}
+  \bfH_2 \bfV=  -\left( \frac {(\exp(\bfS))}{\bfe_{n_c}(\bfe_{n_c}^\top \exp(\bfS))^2 }\right) 
+   \odot (\bfe_{n_c}\bfe_{n_c}^\top (\exp(\bfS) \odot (\bfV \bfY)))\bfY^{\top}  
+ \end{align*}
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Newton-CG for Softmax function }
+
+Mat-vecs with Hessian can be computed as
+\begin{eqnarray*}
+	\nabla^2_\bfW E(\bfW) \bfV=& \frac{1}{n}  \left( \left( {\frac {\exp(\bfS)} {\bfe_{n_c}\bfe_{n_c}^\top \exp(\bfS)}} \right) \odot ( \bfV \bfY) \right)\bfY^\top \\
+	-&\frac{1}{n}  \left( {\frac {(\exp(\bfS))}{\bfe_{n_c}(\bfe_{n_c}^\top\exp(\bfS))^2 }}\right)  \odot (\bfe_{n_c}\bfe_{n_c}^\top (\exp(\bfS) \odot (\bfV \bfY)) )\bfY^\top
+\end{eqnarray*}
+(possible to further simplify this to reduce operations)
+
+\bigskip
+\pause
+
+Now, ready to use matrix-free Newton method with Armijo linesearch and CG solver that computes
+$$
+	\nabla^2_\bfW E(\bfW) \bfD \approx -\nabla_\bfW E(\bfW).
+$$
+
+Remarks:
+\begin{itemize}
+	\item how well to solve? use large tolerance on relative residual
+	\item can accelerate CG with preconditioning $\leadsto$ PCG
+	\item possible to omit second term in Hessian?
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Coding: Hessian of Softmax Function}
+
+Extend your softmax function, so that it returns a function handle computing mat-vecs with Hessian if needed.
+
+\begin{verbatim}
+function[E,dE,d2Emv] = softmaxFun(W,Y,C)
+
+% Your code from before
+if nargout > 1
+% Your code from before
+end
+
+if nargout > 2
+
+% Your new code here
+d2Emv = @(V) ...;
+end
+end
+\end{verbatim}
+\begin{center}
+	Don't forget to check your derivatives!
+\end{center}
+\end{frame}
+
+
+\begin{frame}\frametitle{Newton-like Methods - Derivatives}
+
+Consider the softmax function
+
+$$ E(\bfW) = -\sum \bfY \odot (\bfX \bfW) +\sum \log\left (\sum \exp(\bfX \bfW) \right) $$
+
+
+{\bf Class problems:}
+
+\begin{enumerate}
+\item Compute the Hessian of the cross entropy function
+
+\item Write code that constructs the matrix it and do a derivative check at a random point $\bfW_0$.
+
+\item
+Write a code that performs matrix vector products with the Hessian (without constructing it). Test by comparing results with the matrix-based code for a random vector.
+
+\end{enumerate}
+
+
+\end{frame}
+
 
 \begin{frame}[allowframebreaks]
 	\frametitle{References}
