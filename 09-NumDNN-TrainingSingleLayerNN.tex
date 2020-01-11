@@ -30,16 +30,21 @@ Today: Derive practical pipeline consisting of
 \end{frame}
 
 \begin{frame}\frametitle{Variable Projection - 1}
-	Idea: Treat learning problem as coupled optimization problem with blocks $\bftheta$ and $\bfW$. 
+	Idea: Treat learning problem as coupled optimization problem with blocks $\bftheta=(\bfK,\bfb)$ and $\bfW$. 
 	
 	Simple illustration for coupled least-squares problem~\cite{GoPe1973,GoPe03,OLearyRust2013}
 	$$
 		\min_{\bftheta,\bfw} \phi(\bftheta,\bfw) = \hf \| \bfA(\bftheta) \bfw - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
+	
+	\pause
+	
 	Note that for given $\bftheta$ the problem becomes a standard least-squares problem. Define: 
 	$$
 		\bfw(\bftheta) = \left( \bfA(\bftheta)^\top \bfA(\bftheta) + \lambda \bfL^\top \bfL \right)^{-1}{\bfA(\bftheta)^\top \bfc}
 	$$
+	
+	\pause
 	This gives optimization problem in $\bftheta$ only (aka \emph{reduced/projected  problem})
 	$$
 		\min_{\bftheta} \tilde{\phi}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
@@ -59,11 +64,11 @@ Today: Derive practical pipeline consisting of
 		\nabla_{\bfw} \phi(\bftheta,\bfw(\bftheta)) = \bfA(\bftheta)^\top( \bfA(\bftheta) \bfw(\bftheta) - \bfc) + \lambda \bfL^\top \bfL \bfw(\bftheta) = 0
 	$$
 	
-	Conclusion:
+	Discussion:
 	\begin{itemize}
 		\item ignore second term in gradient computation
-		\item apply steepest descent or Gauss-Newton  to minimize $\tilde{\phi}$
-		\item need to solve least-squares problem in each evaluation of objective
+		\item apply gradient descent/NLCG/BFGS  to minimize $\tilde{\phi}$
+		\item solve least-squares problem in each evaluation of $\tilde{\phi}$
 		\item gradient is only correct if LS problem is solved exactly
 	\end{itemize}
 	
@@ -79,7 +84,9 @@ Assume that the regularizer is separable, i.e.,
 $$
  R(\bftheta,\bfW) =   R_1(\bftheta) +  R_2(\bfW)
 $$
-and that $R_2$ is convex and smooth. Hence, the projection requires solving the regularized classification problem
+and that $R_2$ is convex and smooth. 
+\pause
+Hence, the projection requires solving the regularized classification problem
 $$
 \bfW(\bftheta) = \argmin_{\bfW} E(\bfW\sigma(\bfK(\bftheta)\bfY), \bfC) + \lambda R_2(\bfW)
 $$
@@ -91,15 +98,15 @@ practical considerations:
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Stochastic Optimization}
+\begin{frame}\frametitle{Stochastic Optimization}
 	Assume that each $\bfy_i$, $\bfc_i$ pair is drawn from some (unknown probability distribution). 
 	
 	Then, we can interpret the learning problem as minimizing the expected value of the cross entropy, e.g., in linear regression
 	$$
-		E(\bfW) = {\mathbb{E}} \left(\hf \|\bfy^\top \bfW - \bfc\|^2\right)
+		E(\bftheta,\bfW) = {\mathbb{E}} \left(\hf \|\bfW \sigma(\bfK(\bftheta)\bfy + \bfb ) - \bfc\|^2\right)
 	$$
 	
-	This is a stochastic optimization problem~\cite{bottou2016optimization}. \pause One idea: \textbf{Stochastic Approximation: } Design iteration $\bfW_k \to \bfW^*$ so that expected value decreases.
+	This is a stochastic optimization problem~\cite{bottou2016optimization}. \pause One idea: \textbf{Stochastic Approximation: } Design iteration $(\bftheta_k,\bfW_k) \to (\bftheta^*,\bfW^*)$ so that expected value decreases.
 		
 		Example: Stochastic Gradient Descent, ADAM, \ldots
 		
@@ -112,12 +119,12 @@ practical considerations:
 	
 	Alternative way to solve stochastic optimization problem
 	$$
-	E(\bfW) = {\mathbb{E}} \left(\hf \|\bfy^\top \bfW - \bfc\|^2\right)
+	E(\bfW) = {\mathbb{E}} \left(\hf \| \bfW \sigma(\bfK(\bftheta)\bfy + \bfb) - \bfc\|^2\right)
 	$$
 	
 	 Pick relatively large sample $S \subset \{ 1,\ldots,n\}$ and use deterministic optimization method to solve
 			$$
-				\min_\bfW  \frac{1}{2|S|} \sum_{s\in S} \| \bfy_s \bfW - \bfc_s^\top \|^2.
+				\min_{\bftheta,\bfW}  \frac{1}{2|S|} \sum_{s\in S} \| \bfW \sigma(\bfK(\bftheta)\bfy_s + \bfb )  - \bfc_s^\top \|^2.
 			$$
 		
 			Pro: use your favorite solver, linesearch, stopping\ldots
@@ -128,6 +135,7 @@ practical considerations:
 				Note: Sample stays fixed during iteration.
 			\end{center}
 \end{frame}
+
 \begin{frame}
 	\frametitle{A Practical Approach}
 	

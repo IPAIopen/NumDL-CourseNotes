@@ -16,9 +16,9 @@
 
 Recall single layer
 $$
-	\bfZ = \sigma(\bfK\bfY + b),
+	\bfZ = \sigma(\bfK\bfY + \bfb),
 $$
-where $\bfY \in \R^{n_f\times n}, \bfK \in \R^{m \times n_f}, b\in\R$, and $\sigma$ element-wise activation. 
+where $\bfY \in \R^{n_f\times n}, \bfK \in \R^{m \times n_f}, \bfb\in\R^m$, and $\sigma$ element-wise activation. 
 
 \bigskip
 \pause
@@ -40,6 +40,7 @@ Possible remedies:
 	\item \textbf{Parametric model:} $\bfK(\bftheta)$ where $\bftheta\in\R^p$ with $p\ll m\cdot n_f$.
 \end{itemize}
 \end{frame}
+
 
 \begin{frame}\frametitle{Some Simple Parametric Models}
 	
@@ -81,7 +82,7 @@ Possible remedies:
 	\frametitle{Differentiating Parametric Models}
 	Need derivatives of model to optimize $\bftheta$ in
 	$$
-		E(\bfW \sigma(\bfK(\bftheta)\bfY+b),\bfC) 
+		E(\bfW \sigma(\bfK(\bftheta)\bfY+\bfb),\bfC) 
 	$$
 	(we can re-use previous derivatives and use chain rule)
 	
@@ -136,10 +137,6 @@ Possible remedies:
 		Note: not efficient to construct $\bfQ$ when $p$ large but helpful when computing derivatives
 	\end{center}
 \end{frame}
-% section parametric_models (end)
-
-\section{Convolutional Neural Networks (CNNs)} % (fold)
-\label{sec:convolutional_neural_networks}
 
 \begin{frame}\frametitle{Convolutional Neural Networks~\cite{LeCun1990}}
 	\begin{center}
@@ -156,26 +153,26 @@ Possible remedies:
 	\begin{itemize}
 		\item useful for speech, images, videos, \ldots
 		\item efficient parameterization, efficient codes (GPUs, \ldots)
-		\item now: CNNs as parametric model and PDEs, simple code
+		\item later: CNNs as parametric model and PDEs, simple code
 		\item see \texttt{E13Conv2D.m}
 	\end{itemize}
 
 \end{frame}
 
 \begin{frame}\frametitle{Convolutions in 1D}
-	Let $y, z, \bftheta:\R \to \R$, $z : \R\to\R$ be continuous functions then
+	Let $y, z, \theta:\R \to \R$, $z : \R\to\R$ be continuous functions then
 	\begin{equation*}
-		z(x) = (\bftheta * y)(x) = \int_{-\infty}^\infty \bftheta(x-t) y(t) dt.
+		z(x) = (\theta * y)(x) = \int_{-\infty}^\infty \theta(x-t) y(t) dt.
 	\end{equation*}
-	Assume $\bftheta(x) \neq 0$ only in interval $[-a,a]$ (compact support).
+	Assume $\theta(x) \neq 0$ only in interval $[-a,a]$ (compact support).
 	
 	\bigskip
 	\pause
 	
 	A few properties
 	\begin{itemize}
-	\item $ \bftheta * y = {\cal F}^{-1}(({\cal F} \bftheta) ({\cal F} y))$, ${\cal F}$ is Fourier transform
-	\item $ \bftheta * y =  y * \bftheta$ 
+	\item $ \theta * y = {\cal F}^{-1}(({\cal F} \theta) ({\cal F} y))$, ${\cal F}$ is Fourier transform
+	\item $ \theta * y =  y * \theta$ 
 	\end{itemize}
 	
 	
@@ -303,11 +300,11 @@ Possible remedies:
 	
 	An attractive property of a circulant matrix is that we can efficiently compute its eigendecomposition
 	$$
-		\bfK(\bftheta) = \bfF^* {\rm diag}(\lambda) \bfF
+		\bfK(\bftheta) = \bfF^* {\rm diag}(\bflambda) \bfF
 	$$ 
-	where $\bfF$ is the discrete Fourier transform and the eigenvalues, $\lambda \in {\mathbb{C}}^4$, can be computed using first column
+	where $\bfF$ is the discrete Fourier transform and the eigenvalues, $\bflambda \in {\mathbb{C}}^4$, can be computed using first column
 	$$
-		\lambda =   \bfF( \bfK(\bftheta) \bfu_1) \quad \text{ where} \quad \bfu_1 = (1,0,0,0)^\top.
+		\bflambda =   \bfF( \bfK(\bftheta) \bfu_1) \quad \text{ where} \quad \bfu_1 = (1,0,0,0)^\top.
 	$$ 	
 \end{frame}
 
@@ -340,8 +337,8 @@ Possible remedies:
 	Assume single example, $\bfy$. Since we have periodic boundary conditions
 	\begin{equation*}
 		\begin{split}
-	   \bfK(\bftheta)\bfy & =  {\rm real}(\bfF^*( \lambda(\bftheta) \odot \bfF \bfy)) \\
-	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \lambda(\bftheta)), \quad 		\lambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
+	   \bfK(\bftheta)\bfy & =  {\rm real}(\bfF^*( \bflambda(\bftheta) \odot \bfF \bfy)) \\
+	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bflambda(\bftheta)), \quad 		\bflambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
 		\end{split}
 	\end{equation*}
 	\pause
@@ -484,6 +481,7 @@ Possible remedies:
 			\includegraphics[width=3.6cm]{stl-monkey-3}
 		\end{tabular}
 	\end{center}
+	\pause
 	
 	Width of CNN can be controlled by number of input and output channels of each layer. Let $\bfy = (\bfy_R, \bfy_G, \bfy_B)$, then we might compute
 	$$

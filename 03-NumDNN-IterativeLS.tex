@@ -295,11 +295,11 @@ Excellent introduction to computational inverse problems~\cite{Hansen1998,Vogel2
 
 The CGLS algorithm has the following properties
 \begin{itemize}
-\item For each iteration $\| \bfA \bfx_j -\bfc \|^2 \le \| \bfA \bfx_{j-1} -\bfc \|^2$
-\item If starting from  $\bfx=0$ then $\|\bfx_j  \|^2 \ge \|  \bfx_{j-1}  \|^2$
+\item For each iteration $\| \bfA \bfx_k -\bfc \|^2 \le \| \bfA \bfx_{k-1} -\bfc \|^2$
+\item If starting from  $\bfx=0$ then $\|\bfx_k  \|^2 \ge \|  \bfx_{k-1}  \|^2$
 
 \item $\bfx_1,\bfx_2,\ldots$ converges to the minimum norm solution of the problem
-\item Plotting $\|\bfx_j\|^2$ vs $\| \bfA\bfx_j -\bfc \|^2$ typically has the shape of an L-curve
+\item Plotting $\|\bfx_k\|^2$ vs $\| \bfA\bfx_k -\bfc \|^2$ typically has the shape of an L-curve
 \end{itemize}
 
 
@@ -307,13 +307,11 @@ The CGLS algorithm has the following properties
 \begin{center}
 \includegraphics[width=6cm]{lcurve.jpg}
 \end{center}
-
 \end{frame}
 
 
-
-\begin{frame}[fragile]
-	\frametitle{Cross Validation}
+\begin{frame}
+	\frametitle{Cross Validation - 1}
 
 Finding good least-squares solution requires good parameter selection.
 \begin{itemize}
@@ -332,10 +330,10 @@ How to decide which one is better?
 
 \end{frame}
 
-\begin{frame}[fragile]
-	\frametitle{Cross Validation}
+\begin{frame}
+	\frametitle{Cross Validation - 2}
 
-Measure how well can each of the solutions predict new data.
+Goal: Gauge how well the model can predict new examples.
 
 \bigskip
 
@@ -343,21 +341,24 @@ Let $\{ \bfA_{\rm CV}, \bfc_{\rm CV} \}$ be data that is {\bf not used} for the 
 
 \bigskip
 
-Then if $\|\bfA_{\rm CV} \bfx_1 - \bfc_{\rm CV}\|^2 \le 
-\|\bfA_{\rm CV} \bfx_2 - \bfc_{\rm CV}\|^2$
+Idea: If $\|\bfA_{\rm CV} \bfx_1 - \bfc_{\rm CV}\|^2 \le 
+\|\bfA_{\rm CV} \bfx_2 - \bfc_{\rm CV}\|^2$,
 then $\bfx_1$ is a better solution that $\bfx_2$.
 
 \bigskip
 
 \pause
 
-In general, if the solution depends on some hyper-parameter $\lambda$ then the best one is
-$$ \lambda^* = {\rm arg}\min \|\bfA_{\rm CV} \bfx(\lambda) - \bfc_{\rm CV}\|^2. $$
+When the solution depends on some hyper-parameter(s) $\lambda$, we can phrase this as bi-level optimization problem
+\begin{equation*}
+ \lambda^* = \argmin_{\lambda} \|\bfA_{\rm CV} \bfx(\lambda) - \bfc_{\rm CV}\|^2,
+\end{equation*}
+where  $\bfx(\lambda) = \argmin_\bfx \|\bfA \bfx - \bfx \|^2 + \lambda \|\bfx\|^2$.
 
 \end{frame}
 
-\begin{frame}[fragile]
-	\frametitle{Cross Validation}
+\begin{frame}
+	\frametitle{Cross Validation - 3}
 
 To assess the final quality of the solution cross validation is not sufficient (why?).
 
@@ -379,9 +380,6 @@ Procedure
 
 {\bf Important} -  we are not allowed to use $\bfA_{\rm test}$ to tune parameters!
 
-
-
-
 \end{frame}
 
 
@@ -393,7 +391,7 @@ Procedure
 	Outline:
 	\begin{itemize}
 		\item Dataset: MNIST / CIFAR 10
-		\item write a steepest descent specific to the problem
+		\item write a steepest descent for least-squares problems
 		\begin{verbatim}
 			function x = sdLeastSquares(A,c,x0,maxIter)
 		\end{verbatim}

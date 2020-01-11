@@ -17,12 +17,12 @@
 \label{sec:least_squares_regression}
 
 
-\begin{frame}\frametitle{Learning Problem}
+\begin{frame}\frametitle{Supervised Learning Problem}
 
 Given examples (inputs)
-$$ \bfY = \begin{pmatrix}  \bfy_1 &  \bfy_2   & \cdots & & \bfy_n \end{pmatrix} \in\R^{n_f\times n}$$
+$$ \bfY = \left[\bfy_1,  \bfy_2 , \cdots, \bfy_n \right] \in\R^{n_f\times n}$$
 and labels (outputs)
-$$ \bfC = \begin{pmatrix}  \bfc_1  &  \bfc_2  & \cdots &  \bfc_n \end{pmatrix} \in\R^{n_c\times n},$$
+$$ \bfC = \left[ \bfc_1,  \bfc_2, \cdots,  \bfc_n \right] \in\R^{n_c\times n},$$
 
 find a classification/prediction function $f(\cdot,\bftheta)$, i.e., 
 
@@ -30,7 +30,10 @@ $$
 f(\bfy_j,\bftheta) \approx \bfc_j, \quad j=1,\ldots,n.
 $$
 
-\end{frame} \begin{frame}\frametitle{Regression and Least-Squares}
+\end{frame}
+
+
+\begin{frame}\frametitle{Regression and Least-Squares}
 
 Simplest option, a linear model with $\bftheta = (\bfW,\bfb)$ and
 $$ f(\bfY,\bfW,\bfb) =  \bfW \bfY + \bfb \bfe_n^\top \approx \bfC $$
@@ -39,8 +42,11 @@ $$ f(\bfY,\bfW,\bfb) =  \bfW \bfY + \bfb \bfe_n^\top \approx \bfC $$
 	\item $\bfb \in \R^{n_c}$ are \emph{biases}
 	\item $\bfe_n \in \R{^n}$ is a vector of ones
 \end{itemize} 
+\pause
 Equivalent notation:
 $$f(\bfY,\bfW,\bfb) = \begin{pmatrix} \bfW & \bfb \end{pmatrix} \begin{pmatrix} \bfY \\ \bfe_n^\top \end{pmatrix} \approx \bfC$$
+
+\pause
 
 Problem may not have a solution, or may have infinite solutions (when?).
 Solve through optimization
@@ -71,6 +77,7 @@ $$ \min_{\bfW} \hf \|\bfW \bfY - \bfC\|^2_F $$
 	$$
 		
 \end{frame} 
+
 \begin{frame}\frametitle{Optimality Conditions for Least-Squares}
 
 To minimize a function need to differentiate and equate to $0$

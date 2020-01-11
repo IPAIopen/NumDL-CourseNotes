@@ -27,24 +27,25 @@ Solution may not generalize well to test data.
 
 Idea: Learn $\bfK$ and $b$  from the data (in addition to $\bfW$)
 
-$$ \min_{\bfK,\bfW,b} E(\bfW\sigma(\bfK \bfY + b), \bfC^{\rm obs}) + \lambda R(\bfW,\bfK,\bfb)$$
+$$ \min_{\bfK,\bfW,b} E(\bfW\sigma(\bfK \bfY + \bfb), \bfC^{\rm obs}) + \lambda R(\bfW,\bfK,\bfb)$$
 
 About this optimization problem:
 \begin{itemize}
-	\item more unknowns $\bfK \in \R^{m \times n_f}$, $\bfW \in \R^{n_c \times m}$, $b \in \R$
+	\item more unknowns $\bfK \in \R^{m \times n_f}$, $\bfW \in \R^{n_c \times m}$, $\bfb \in \R^m$
 	\item  non-convex problem $\leadsto$ local minima, careful initialization
-	\item need to compute derivatives w.r.t. $\bfK, b$
+	\item need to compute derivatives w.r.t. $\bfK, \bfb$
 \end{itemize}
 
 
 \end{frame}
+
 
 \begin{frame}
 	\frametitle{Non-Convexity}
 	The optimization problem is non-convex. Simple illustration of cross-entropy along two random directions $d\bfK$ and $d\bfW$
 
 	\begin{center}
-		\includegraphics[width=.6\textwidth]{images/nonConvexitySingleLayer}
+		\includegraphics[width=.6\textwidth]{nonConvexitySingleLayer}
 		
 		(see \texttt{ESingleLayer\_PlotObjective.m})
 	\bigskip
@@ -223,19 +224,21 @@ function[Z,JKt,Jbt,JYt,JK,Jb,JY] = singleLayer(K,b,Y)
 \begin{frame}
 	\frametitle{Gauss-Newton Method}
 	
-	\textbf{Goal:} Use curvature information to accelerate convergence
+	\textbf{Goal:} Use curvature information for fast convergence
 	$$
-	\nabla_{\bfK} E(\bfK,b,\bfW) =  (\bfJ_\bfK \bfZ)^\top \nabla_\bfZ E(\bfW\sigma(\bfK \bfY+b),\bfC),
+	\nabla_{\bfK} E(\bfK,\bfb,\bfW) =  (\bfJ_\bfK \bfZ)^\top \nabla_\bfZ E(\bfW\sigma(\bfK \bfY+\bfb),\bfC),
 	$$
-	where $\bfJ_\bfK \bfZ = \nabla_{\bfK} \sigma(\bfK \bfY+b)^\top$. This means that Hessian is
+	where $\bfJ_\bfK \bfZ = \nabla_{\bfK} \sigma(\bfK \bfY+\bfb)^\top$.\pause This means that Hessian is
 	\begin{equation*}
 		\begin{split}
 	\nabla_{\bfK}^2 E(\bfK) &  = (\bfJ_{\bfK}\bfZ)^\top  \nabla_\bfZ^2 E(\bfC,\bfZ,\bfW) \bfJ_{\bfK}\bfZ\\
-	 & + \sum_{i=1}^{n}\sum_{j=1}^{m} \nabla_{\bfK}^2 \sigma(\bfK \bfY+b)_{ij} \nabla_\bfZ E(\bfC,\bfZ,\bfW)_{ij}
+	 & + \sum_{i=1}^{n}\sum_{j=1}^{m} \nabla_{\bfK}^2 \sigma(\bfK \bfY+\bfb)_{ij} \nabla_\bfZ E(\bfC,\bfZ,\bfW)_{ij}
 		\end{split}
 	\end{equation*}
 	
 	First term is spsd and we can compute it.
+	
+	\pause
 	
 	We neglect second term since
 	\begin{itemize}

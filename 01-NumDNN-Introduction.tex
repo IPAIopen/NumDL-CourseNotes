@@ -61,13 +61,13 @@
 \section{Introduction to (Deep) Neural Networks} % (fold)
 \label{sec:introduction_to_deep_neural_networks}
 
-\begin{frame}\frametitle{{Deep Neural Networks: History}}
+\begin{frame}\frametitle{Deep Neural Networks: History}
 
 \begin{itemize}
 	\item Neural Networks with a particular (deep) architecture
     \item Exist for a long time (70's and even earlier)~\cite{Rosenblatt1958,Rumelhart1986,LeCun1990}
-    \item Recent revolution - computational power and big data~\cite{bengio2009learning,RainaEtAl2009,lecun2015deep}
-    \item Can perform very well with lots of data
+    \item Recent revolution - computational power and lots of data~\cite{bengio2009learning,RainaEtAl2009,lecun2015deep}
+    \item Can perform very well when trained with lots of data
     \item Applications
     \begin{itemize}
     \item Image recognition~~\cite{hinton2012deep,KrizhevskySutskeverHinton2012,lecun2015deep}, segmentation, natural language processing~\cite{BordesEtAl2014,CollobertEtAl2011,  JeanEtAl2014}
@@ -89,9 +89,9 @@
 \end{itemize}
 \end{frame}
 
-\begin{frame}\frametitle{NN - A Quick Overview}
+\begin{frame}\frametitle{DNN - A Quick Overview - 1}
 
-Neural Networks is a data interpolator/classifier when the underlying model
+Neural networks are data interpolator/classifier when the underlying model
 is unknown.
 
 \bigskip
@@ -101,26 +101,58 @@ $$ \bfc = f(\bfy,\bftheta). $$
 
 
 \begin{itemize}
-\item The function $f$ is the computational model.
+\item the function $f$ is the computational model
 \item $\bfy\in\R^{n_f}$ is the input data (e.g., an image)
-\item $\bfc\in\R^{n_c}$ is the output (e.g. class the image)
+\item $\bfc\in\R^{n_c}$ is the output (e.g. class of the image)
 \item $\bftheta\in\R^{n_p}$ are parameters of the model $f$
 \end{itemize}
 
-In learning we have examples $\{(\bfy_j,\bfc_j) \ : \ j=1,\ldots,n\}$ and the goal
-is to estimate or ``learn'' the parameters $\bftheta$
+In supervised learning we have examples $\{(\bfy_j,\bfc_j) \ : \ j=1,\ldots,n\}$ and the goal
+is to estimate or ``learn'' the parameters $\bftheta$.
 
 \end{frame}
 
-
-\begin{frame}\frametitle{Learning From Data: The Core of Science}
+\begin{frame}
+	\frametitle{DNN - A Quick Overview - 2}
+	
+	\begin{center}
+		\begin{columns}
+			\column{.4\textwidth}
+				\only<1>{\includegraphics[width=\textwidth]{NNpic}}\only<beamer|2->{\includegraphics[width=\textwidth]{NNpic2}}
+			\column{.6\textwidth}
+			\invisible<beamer|1>{ $ \left\{ 
+				\begin{array}{rcl}
+					\bfy_{l+1} &=& \sigma( \bfK_l \bfy_l + \bfb_l) \\
+					\bfy_{l+1} &=& \bfy_l + \sigma( \bfK_l \bfy_l + \bfb_l) \\	
+					\bfy_{l+1} &=& \bfy_l + \sigma\left( \bfL_{l}\sigma( \bfK_{l} \bfy_l + \bfb_{l})\right) \\	
+					&\vdots			&
+				\end{array}
+			\right.$
+			
+			}
+		
+		\end{columns}
+	\end{center}
+		
+		\vspace{5mm}
+		\invisible<beamer|1>{
+		Here:
+		\begin{itemize}
+			\item $l=0,1,2,\ldots,N$ is the layer
+			\item $\sigma : \R \to \R$ is the activation function
+			\item $\bfy_0 = \bfy\in\R^{n_f}$ is the input data (e.g., an image)
+			\item $\bfc\in\R^{n_c}$ is the output (e.g. class of the image)
+			\item $\bfL_l, \bfK_l, \bfb_l$ are parameters of the model $f$
+		\end{itemize}}
+		\end{frame}
+\begin{frame}\frametitle{Learning From Data: The Core of Science - 1}
 
 
 Given inputs and outputs, how to choose $f$?
 
 \bigskip
 
-Option 1 (Fundamental(?) understanding): For example, Newton's formula
+\textbf{Option 1} (Fundamental(?) understanding): For example, Galileo's law of motion
 $$ x(t) = \hf g t^2, $$
 with unknown parameter $g$. 
 
@@ -136,15 +168,15 @@ t   &  x \\ \hline
 3  & 44.1 \\
 \end{tabular}
 \end{center}
-What is the optimal value for $g$?
 
+\bigskip
 
-
+Goal: Derive model from theory, calibrate it using data.
 
 \end{frame}
 
 
-\begin{frame}\frametitle{Learning From Data: The Core of Science}
+\begin{frame}\frametitle{Learning From Data: The Core of Science - 2}
 
 
 
@@ -152,7 +184,7 @@ Given inputs and outputs, how to choose $f$?
 
 \bigskip
 
-Option 2 (Phenomenological models): For example, Archie's law - what is the electrical resistivity of a rock
+\textbf{Option 2} (Phenomenological models): For example, Archie's law - what is the electrical resistivity of a rock
  and how it relates to its porosity, $\phi$ and saturation, $S_w$?
 $$ \rho(\phi,S_w) = a \phi^{n/2} S_w^p $$
 $a,n,p$ unknown parameters
@@ -160,7 +192,11 @@ $a,n,p$ unknown parameters
 
 \bigskip
 
-Obtaining parameters from observed data and lab experiments on rocks
+Obtaining parameters from observed data and lab experiments on rocks.
+
+\bigskip
+
+Goal: Find model that consistent with fundamental theory, without directly deriving it from theory.
 
 
 \end{frame}
@@ -173,7 +209,7 @@ They are {\bf assumed invariant} and can therefore be predictive(?).
 
 \bigskip
 
-\textbf{Phenomenological models} are data driven. They ``work'' on some given data.
+\textbf{Phenomenological models} are data-driven. They ``work'' on some given data.
 Hard to know what their limitations are.
 
 \bigskip
@@ -188,7 +224,8 @@ Hard to know what their limitations are.
 \end{frame}
 
 
-\begin{frame}\frametitle{Generalization}
+
+\begin{frame}\frametitle{Generalization - 1}
 
 Suppose that we have examples $\{\bfy_j,\bfc_j\},\ \ j=1,\ldots,n$,
 a model $f(\bfy,\bftheta)$ and some optimal parameter $\bftheta^*$.
@@ -196,6 +233,7 @@ a model $f(\bfy,\bftheta)$ and some optimal parameter $\bftheta^*$.
 Let $\{(\bfy^t_j,\bfc^t_j) \ : \  j=1,\ldots,s\}$ be some test set, that was not used
 to compute $\bftheta^*$.
 
+\bigskip
 \pause
 
 Loosely speaking, if
@@ -214,8 +252,15 @@ should generalize, but in practice it often does.
 
 \end{frame}
 
-\begin{frame}\frametitle{Generalization}
+\begin{frame}\frametitle{Generalization - 2}
 
+\begin{center}
+	\begin{tabular}{cc}
+		\invisible<beamer|1>{\includegraphics[width=.45\textwidth]{generalize_overfit}}
+		&
+		\invisible<beamer|-2>{\includegraphics[width=.45\textwidth]{generalize_underfit}}
+	\end{tabular}
+\end{center}
 
 Why would a model generalize poorly?
 $$ 1 \ll \|f(\bfy^t_j,\bftheta^*) - \bfc_j^t\|_p $$
@@ -226,11 +271,14 @@ $$ 1 \ll \|f(\bfy^t_j,\bftheta^*) - \bfc_j^t\|_p $$
 Two common reasons:
 \begin{enumerate}
 \item Our ``optimal'' $\bftheta^*$ was optimal for the training but is less so for other data
-\item The chosen computational model $f$ is poor (e.g. linear model for a nonlinear function).
+\pause
+\item The chosen computational model $f$ is poor (e.g. quadratic model for a nonlinear function).
 \end{enumerate}
 
 
 \end{frame} 
+
+
 \begin{frame}\frametitle{Example: Classification of Hand-written Digits }
 
 \begin{itemize}
@@ -268,7 +316,7 @@ Examples (CIFAR-10):
 
 \end{frame}
  
-\begin{frame}\frametitle{Example:  Semantic Segmentation}
+\begin{frame}\frametitle{Example:  Semantic Segmentation - 1}
 
 \begin{itemize}
 	\item
@@ -290,7 +338,32 @@ Examples (CIFAR-10):
 
 \end{frame}
 
-\begin{frame}\frametitle{Example 3: Semantic Segmentation}
+\begin{frame}\frametitle{Example: Semantic Segmentation - 2}
+
+Problem: Given image $\bfy$ and label $\bfc$, find a map $f(\cdot,\bftheta)$ such that $\bfc  \approx f(\bfy,\bftheta)$ 
+
+\bigskip
+\pause
+
+First step: Reduce the dimensionality of problem.
+\begin{itemize}
+\item extract features from the image
+\item classify in the feature space
+\end{itemize}
+
+Reduce the problem of learning from the image to feature
+detection and classification
+
+\pause
+\bigskip
+
+Possible features: Color, neighbors, edges ...
+
+\bigskip
+
+
+\end{frame}
+\begin{frame}\frametitle{Example: Semantic Segmentation - 3}
 
 Problem: Given image $\bfy$ and label $\bfc$ find a map $f(\cdot,\bftheta)$ such that $\bfc  \approx f(\bfy,\bftheta)$ 
 
@@ -317,7 +390,7 @@ Possible features: Color, neighbors, edges ...
 \end{frame}
 
 
-\begin{frame}\frametitle{Example 3 - Semantic Segmentation}
+\begin{frame}\frametitle{Example: Semantic Segmentation - 3}
 
 
 Simpler setup
@@ -335,20 +408,6 @@ input image and segmentation & 3D representation of RGB values \\
 
 \end{frame}
 
-\begin{frame}\frametitle{Coding: Download Data and Setup MATLAB}
-
-The following data sets will be used throughout the course (and homework projects).
-
-\bigskip
-
-The following are ordered from small and easy to large and challenging:
-\begin{itemize}
-	\item MNIST
-	\item CIFAR-10
-	\item CamVid: download from Mathworks web page. 
-\end{itemize}
-
-\end{frame}
 
 \begin{frame}[allowframebreaks]
 	\frametitle{References}

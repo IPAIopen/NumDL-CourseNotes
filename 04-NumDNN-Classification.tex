@@ -35,7 +35,7 @@
 	$$
 	
 	\begin{center}
-		from now on consider linear models for simplicity
+		for now: consider linear models for simplicity
 	\end{center}
 	
 \end{frame}
@@ -61,9 +61,9 @@
 	\frametitle{Logistic Regression - Loss Function}
 	
 	How similar are $\bfc(\cdot,\bfW)$ and $\bfc_{\rm obs}(\cdot)$?
-	
-\bigskip
 
+	\begin{columns}
+		\column{.7\textwidth}
 	Naive idea: Let $\bfY \in \R^{n_f\times n}$ be examples with class probabilities $\bfC_{\rm obs} \in [0,1]^{n_c\times n}$, use 
 	$$
 	\phi(\bfW)= \frac{1}{2n} \sum_{j=1}^n\|\bfc(\bfy_j,\bfW) - \bfc_{j,{\rm obs}} \|_F^2
@@ -74,10 +74,16 @@ Problems
 	\item ignores that $\bfc(\cdot,\bfW)$ and $\bfc_{\rm obs}(\cdot)$ are distributions.
 	\item leads to non-convex objective function
 \end{itemize} 
-
-\bigskip
-
-Need to be careful to treat $\bfc$ appropriately. 	
+		
+		\column{.4\textwidth}
+		
+		\begin{tabular}{c}
+			Frobenius\\
+			\includegraphics[width=\textwidth]{Class_Frobenius}\\
+			Cross Entropy\\
+			\includegraphics[width=\textwidth]{Class_CrossEntropy}
+		\end{tabular}
+	\end{columns}
 	
 \end{frame}
 
@@ -287,7 +293,7 @@ Then the cross entropy is
 	Similarly, for general case ($n_c\geq2$ classes, $n$ examples). 
 	
 	Recall: 
-	$$\bfC(\bfY,\bfW)  =   \exp(\bfW \bfY) {\rm diag} \left({\frac 1 {\bfe_{n_c}^\top\exp(\bfW \bfY)}}  \right)  $$
+	$$\bfC(\bfY,\bfW)  =   \exp(\bfW \bfY)\; {\rm diag} \left({\frac 1 {\bfe_{n_c}^\top\exp(\bfW \bfY)}}  \right)  $$
 
 \bigskip
 
@@ -307,6 +313,7 @@ Let $\bfS = \bfW \bfY$, then
 $$ 
 E(\bfC_{\rm obs},\bfS) = -\frac{1}{n}{\rm tr}\left(\bfC_{\rm obs}^{\top} \log\left({\exp(\bfS)}{\rm diag}\left(\frac{1}{\bfe_{n_c}^\top \exp(\bfS) }\right) \right)\right). 
 $$
+\pause
 
 Verify that this is equal to
 \begin{align*}
@@ -407,12 +414,13 @@ This is a smooth convex optimization problem \\ $\Rightarrow$ many existing opti
 
 \bigskip
 
-For large-scale problems, use derivative-based optimization algorithm. (Examples: Steepest Descent, Newton-like methods,  Stochastic Gradient Descent, \ldots)
+For large-scale problems, use derivative-based optimization algorithm. (Examples: Steepest Descent, Newton-like methods,  Stochastic Gradient Descent, ADMM, \ldots)
 
 \bigskip
 
-Excellent references: \cite{NocedalWright2006,BoydVandenberghe2004,Beck2014}
+Excellent references: \cite{NocedalWright2006,BoydVandenberghe2004,Beck2014,WuFungEtAl2019SoftmaxADMM}
 \end{frame}
+
  \begin{frame}\frametitle{Differentiating the Softmax Function - 1}
 
 We need to compute the derivative of the cross entropy function with respect to $\bfW$.
