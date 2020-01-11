@@ -1,0 +1,22 @@
+\begin{frame}
+	\frametitle{Line Search Problem}
+	\begin{center}
+		\iwidth=40mm
+		\iheight=30mm
+		\begin{tabular}{cc}
+			objective function
+			&
+			linesearch
+			\\
+			\scriptsize
+			\input{images/lineSearch-contour.tex}
+			&
+			\scriptsize
+			\input{images/lineSearch-linesearch.tex}
+		\end{tabular}
+	\end{center}
+	Let $E$ be the cross entropy, $\bfW_k$ the current weights, and $\bfD$ the search direction.  The line search problem is:
+	\begin{equation*}
+		\min_{\alpha > 0} \phi(\alpha) \quad \text{ where } \quad \phi(\alpha) = E(\bfW_k + \alpha \bfD).
+	\end{equation*}
+\end{frame}
