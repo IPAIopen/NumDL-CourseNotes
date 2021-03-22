@@ -95,6 +95,74 @@ Hard to know what their limitations are.
 
 \end{frame}
 
+\begin{frame}\frametitle{Machine Learning in 3 slides - 1}
+
+{\em Machine learning (ML) is the scientific study of algorithms and statistical models that computer systems use to perform a specific task without using explicit instructions, relying on patterns and inference instead. (wiki)}
+
+\bigskip\pause
+
+Two common tasks in machine learning:
+\begin{itemize}
+\item given data, cluster it and detect patterns in it (unsupervised learning)
+\item given data and labels, find a functional relation between them (supervised learning)
+\end{itemize}
+
+
+
+\end{frame}
+
+\begin{frame}\frametitle{Machine Learning in 3 slides - 2}
+	
+\begin{center}
+	\begin{tabular}{ccc}
+		unsupervised & semi-supervised \\
+		\includegraphics[width=0.4\textwidth]{unsupervised_data}&
+		\includegraphics[width=0.4\textwidth]{unsupervised_semi}		
+	\end{tabular}
+\end{center}
+
+Unsupervised learning - given the data set $\bfY = [\bfy_1,\ldots,\bfy_n]$
+cluster the data into "similar" groups (labels).
+ 
+\bigskip
+
+\begin{itemize}
+\item helps find hidden patterns
+\item often explorative and open-ended
+\end{itemize}
+
+\bigskip
+
+Semisupervised - label the data based on a few examples
+
+
+\end{frame}
+
+\begin{frame}\frametitle{Machine Learning in 3 slides - 3}
+	
+	\begin{center}
+		\begin{tabular}{cc}
+			training data & trained model\\
+			\includegraphics[width=0.4\textwidth]{PeaksStable-train}
+			&
+			\includegraphics[width=0.4\textwidth]{PeaksStable-train-cont}
+		\end{tabular}
+	\end{center}
+	
+
+Supervised learning - given the data set $\bfY = [\bfy_1,\ldots,\bfy_n] \in {\cal Y}$
+and their labels $\bfC = [\bfc_1,\ldots,\bfc_n] \in {\cal C}$, find the relation $f:{\cal Y}\rightarrow {\cal C}$
+ 
+\bigskip
+
+\begin{itemize}
+\item models range in complexity
+\item older models based on support vector machines (SVM) and kernel methods
+\item recently, deep neural networks (DNNs) dominate
+\end{itemize}
+\end{frame}
+
+
 \begin{frame}\frametitle{Deep Neural Networks: History}
 
 \begin{itemize}

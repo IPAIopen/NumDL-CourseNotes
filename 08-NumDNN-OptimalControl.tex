@@ -1,0 +1,535 @@
+\documentclass[12pt,fleqn, beamer]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+\usepackage{animate}
+
+\title[OC]{Optimal Control}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+\begin{document}
+
+\makebeamertitle
+
+\begin{frame}
+	\frametitle{Learning Objective: Optimal Control}
+	
+	In this module we discuss optimal control methods for ResNet training 
+	
+	\bigskip
+	
+	Learning tasks:
+	\begin{itemize}
+		\item regression
+		\item segmentation
+		\item classification
+	\end{itemize}
+	
+	\bigskip
+	
+	Concepts from optimal control
+	\begin{itemize}
+		\item optimize-then-discretize vs. discretize-then-optimize \cite{Onken2020DO}
+		\item backpropagation vs. adjoint equations
+	\end{itemize}
+\end{frame}
+
+\section{Optimization Problem} % (fold)
+\label{sec:optimization_problem}
+\begin{frame}[fragile]\frametitle{Residual Network as a Path Planning Problem}
+
+Change in notation: Moving forward it is more convenient to define $\bfY \in \R^{n_f \times n}$ (transpose data matrix) and $\bfC \in \R^{n_c \times n}$. 
+
+$$ \partial_t{\bfY}(t) = \sigma(\bfK(t) \bfY(t)  + b(t)) \quad \bfY(0) = \bfY_0 $$
+
+The goal is to plan a path such that the transformed features, $\bfY(T)$, can be linearly separated.
+
+
+\begin{center}
+	\begin{tabular}{cc}
+		\includegraphics[width=45mm]{Circle-train} & 
+		\invisible<beamer|1>{\includegraphics[width=45mm]{Circle-proptrain} }\\
+		input features, $\bfY(0)$ & \invisible<beamer|1>{transformed features $\bfY(T)$}
+	\end{tabular}
+\end{center}
+\only<beamer|2>{}
+\end{frame}
+
+	\begin{frame}
+		\frametitle{Example: The Adjoint Equation}
+		
+		Simplified learning problem: one example $(\bfy_0, \bfc)$, no weights for classifier, no regularizer, $\bfy(0,\bftheta) = \bfy_0$
+		\begin{equation*}
+			\min_{\bftheta} {\rm loss}(\bfy(1,\bftheta), \bfc) \; \text{ with } \; \partial_t \bfy(t,\bftheta) = f(\bfy(t),\bftheta(t)).
+		\end{equation*}
+		\pause
+		Use adjoint method to compute gradient of objective w.r.t. $\bftheta$
+		\begin{equation*}
+			\frac{\partial {\rm loss}}{\partial \bftheta}(t) = \left(\frac{\partial f}{\partial \bftheta}({\bfy(t,\bftheta)}, \bftheta(t))\right)^\top \bfz(t)
+		\end{equation*}
+		where $\bfz$ satisfies the adjoint method ($-\partial_t \leadsto$ backward in time)
+		\begin{align*}
+			-\partial_t \bfz(t,\bftheta) = \left(\frac{\partial f}{\partial \bfy} ({\bfy(t,\bftheta)},\bftheta(t))\right)^\top \bfz(t), \\
+			\bfz(1,\bftheta)= \frac{\partial {\rm loss}}{\partial \bfy} ({\bfy(1,\bftheta)}, \bfc).
+		\end{align*}
+		\pause
+	\begin{center}
+		\textbf{note: $\bfy(t)$ needed to solve adjoint equation (memory!)}
+	\end{center}
+	
+	% \begin{columns}
+% 		\column{.5\textwidth}
+% 		\begin{thebibliography}{1}
+% 		\scriptsize
+% 		\bibitem{ResNN} G. A. Bliss\\
+% 		\newblock{\sl The use of adjoint systems in the problem of differential corrections for trajectories}.
+% 		\newblock{JUS Artillery, 51:296–311, 1919}
+% 		\end{thebibliography}
+%
+% 		\column{.5\textwidth}
+% 		\begin{thebibliography}{1}
+% 		\scriptsize
+% 		\bibitem{ResNN} D.E. Rumelhart, G.E. Hinton, R.J. Williams\\
+% 		\newblock{\sl Learning representations by back-propagating errors}.
+% 		\newblock{Nature, 533–536, 1986.}
+% 		\end{thebibliography}
+% 	\end{columns}
+	\end{frame}
+	% \end{document}
+	\begin{frame}
+		\frametitle{ Diff$\rightarrow$Disc vs. Disc$\rightarrow$Diff  \cite{Onken2020DO}}
+		\begin{equation*}
+			\min_{\bftheta} {\rm loss}(\bfY(1,\bftheta), \bfC) \; \text{ with } \; \partial_t \bfY(t,\bftheta) = f(\bfY(t),\bftheta(t)).
+		\end{equation*}
+	 	
+		\pause
+			\textbf{First-Differentiate-then-Discretize ( Diff$\rightarrow$Disc)}
+			\begin{itemize}
+				\item Keep $\bftheta, \bfY$ continuous in time
+				\item Euler-Lagrange-Equations $\leadsto$ adjoint equation ($\approx$ backprop)
+				\item flexible choice of ODE solver in forward and adjoint
+				\item gradients only useful if fwd and adjoint solved well
+				
+				\item use optimization to obtain discrete solution of ELE
+			\end{itemize}
+			\pause
+			\bigskip
+			
+			{\textbf{First-Discretize-then-Differentiate (Disc$\rightarrow$Diff)}}
+			\begin{itemize}
+				\item Discretize $\bftheta, \bfY$ in time (could use different grids)
+				\item Differentiate objective (e.g., use automatic differentiation)
+				\item gradients related to adjoints but no choice of solver
+				\item gradients useful even if discretization is inaccurate 
+				\item use nonlinear optimization tools to approximate minimizer
+			\end{itemize}
+		
+		% 		\begin{columns}
+		% 			\column{.33\textwidth}
+		%
+		% 			\begin{thebibliography}{1}
+		% 			\scriptsize
+		% 			\bibitem{2013Multigrid} MD Gunzburger
+		% 			\newblock{\sl Perspectives in flow control and optimization}.
+		% 			\newblock{SIAM,  2013.}
+		% 			\end{thebibliography}
+		%
+		% 			\column{.30\textwidth}
+		% 			\begin{thebibliography}{1}
+		% 			\scriptsize
+		% 			\bibitem{2013Multigrid2} TQ Chen et al.,
+		% 			\newblock{\sl Neural Ordinary Differential Equations}.
+		% 			\newblock{NeurIPS, 2018.}
+		% 			\end{thebibliography}
+		%
+		% 			\column{.36\textwidth}
+		% 			\begin{thebibliography}{1}
+		% 			\scriptsize
+		% 			\bibitem{2013Multigrid2} A Gholami, K Keutzer, G Biros
+		% 			\newblock{\sl ANODE: Unconditionally Accurate Memory-Efficient Gradients for Neural ODEs}.
+		% 			\newblock{arXiv:1902.10298}
+		% 		\end{thebibliography}
+		% \end{columns}
+	\end{frame}
+	
+
+	\begin{frame}
+			\frametitle{Example: Gradient Test Disc$\rightarrow$Diff}
+			
+			Goal: Find weights of neural network $F(\bfu,\theta)$ such that
+			\begin{equation*}
+				\partial_t \bfu = F(\bfu,\theta),\quad \bfu(0) = \bfu_0
+			\end{equation*}
+			fits true ODE at $0< t_1 < t_2 < \cdots < t_n \leq 1.5$; details Sec. 8 from paper below.
+			
+			\bigskip
+			
+			Question: How does accuracy of ODE solvers impact the quality of gradient?
+			
+			\begin{center}
+				\scriptsize
+				\iwidth=.25\textwidth
+				\iheight=.25\textwidth
+				\begin{tabular}{rrr}
+					\input{images/checkDerivativeDefaultTol.tex}
+				&
+					\invisible<beamer|1>{\input{images/checkDerivativeLargeTol.tex}}
+				&
+					\invisible<beamer|-2>{\input{images/checkDerivativeRK4.tex}}\\
+					 $\epsilon_{\rm rel}=10^{-7}, \epsilon_{\rm abs}=10^{-9}$
+					&
+					 \invisible<beamer|1>{$\epsilon_{\rm rel}=10^{-2}, \epsilon_{\rm abs}=10^{-2}$}
+					 &
+					 \invisible<beamer|-2>{Disc$\rightarrow$Diff, rk4, $n_t=30$}
+				\end{tabular}
+			\end{center}
+	
+	\end{frame}
+	
+	\begin{frame}
+		\frametitle{Example: Training Disc$\rightarrow$Diff}
+		
+		\begin{columns}
+			
+		   \column{.5\textwidth}
+		   \begin{center}
+			   \includegraphics[width=1.\textwidth]{node/node-tol-1e-2/NODE-f64-reltol-1e-2-iter-0}
+			Neural ODE, $\epsilon_{\rm rel}=10^{-7}, \epsilon_{\rm abs}=10^{-9}$\\
+		   \end{center}
+		   % \column{.5\textwidth}
+		   %   \animategraphics[autoplay, width=1.\textwidth]{3}{\Fimage{DeepLearning/numerics/node/node-tol-1e-2/NODE-f64-reltol-1e-2-iter-}}{1}{2}
+		   \column{.5\textwidth}
+		   \begin{center}			   \includegraphics[width=1.\textwidth]{node/node-rk4/rk4-iter-0}
+			Disc$\rightarrow$Diff, RK4, 30 steps
+		   \end{center}
+		\end{columns}
+		
+		\bigskip
+		
+		Training: ADAM with default setting, same initialization
+	\end{frame}
+	
+	
+	\begin{frame}
+		\frametitle{}
+		\begin{columns}
+			
+		   \column{.5\textwidth}
+		   \begin{center}
+		     \animategraphics[autoplay, width=1.\textwidth,every=5]{3}{node/node-tol-1e-7/NODE-f64-reltol-1e-7-iter-}{0}{300}
+			Neural ODE, $\epsilon_{\rm rel}=10^{-7}, \epsilon_{\rm abs}=10^{-9}$\\
+		   \end{center}
+		   % \column{.5\textwidth}
+		   %   \animategraphics[autoplay, width=1.\textwidth]{3}{\Fimage{DeepLearning/numerics/node/node-tol-1e-2/NODE-f64-reltol-1e-2-iter-}}{1}{2}
+		   \column{.5\textwidth}
+		   \begin{center}
+			\animategraphics[autoplay, width=1.\textwidth,every=5]{3}{node/node-rk4/rk4-iter-}{0}{300}
+			Disc$\rightarrow$Diff, RK4, 30 steps
+		   \end{center}
+		\end{columns}
+		\bigskip
+		
+		Training: ADAM with default setting, same initialization
+	\end{frame}
+	% \end{document}
+	
+	\begin{frame}
+		\frametitle{}
+		\begin{columns}
+			
+		   \column{.5\textwidth}
+		   \begin{center}
+		     \animategraphics[autoplay, width=1.\textwidth,every=5]{3}{node/node-tol-1e-2/NODE-f64-reltol-1e-2-iter-}{0}{300}
+			Neural ODE, { $\epsilon_{\rm rel}=10^{-2}, \epsilon_{\rm abs}=10^{-2}$}\\
+		   \end{center}
+		   % \column{.5\textwidth}
+		   %   \animategraphics[autoplay, width=1.\textwidth]{3}{\Fimage{DeepLearning/numerics/node/node-tol-1e-2/NODE-f64-reltol-1e-2-iter-}}{1}{2}
+		   \column{.5\textwidth}
+		   \begin{center}
+			\animategraphics[autoplay, width=1.\textwidth,every=5]{3}{node/node-rk4/rk4-iter-}{0}{300}
+			Disc$\rightarrow$Diff, RK4, 30 steps
+		   \end{center}
+		\end{columns}
+		\bigskip
+		
+		Training: ADAM with default setting, same initialization
+	\end{frame}
+	
+	
+	
+\begin{frame}\frametitle{Residual Network - Forward Propagation}
+
+Idea: Obtain forward propagation by discretizing the ODE
+
+$$ \partial_t{\bfY} = \sigma( \bfK\bfY + b) \quad \bfY(0) = \bfY_0 $$
+
+\bigskip
+\pause
+
+Example: Use forward Euler method
+\begin{eqnarray*}
+\bfY_{j+1} = \bfY_j + h \sigma( \bfK_j\bfY_j + b_j)
+\end{eqnarray*}
+Here: $\bfY_j$ is called the \emph{state}, $\bfK_j, b_j$ are \emph{controls}, and $h>0$ is time step size.
+
+\bigskip
+\pause
+
+More general forward propagation
+\begin{eqnarray*}
+\bfY_{j+1} =  \bfP_j \bfY_j + h \sigma(\bfK_j\bfY_j  + b_j), \qquad \bfP_j \text{ fixed.}
+\end{eqnarray*}
+Allows for changing resolution and width (and classical neural networks).
+
+
+\end{frame}
+% section optimization_problem (end)
+
+\section{Computing Derivatives} % (fold)
+\begin{frame}\frametitle{Residual Network - Optimization Problem}
+
+
+Note: Only final state used in loss
+$$ \min_{\bfW, \bfK_{0,\ldots,N-1},b_{0,\ldots,N-1}}E\left(
+\bfW \bfY_N(\bfK_{0,\ldots,N-1},b_{0,\ldots,N-1}),\bfC^{\rm obs}\right) $$
+
+\bigskip
+\pause
+
+Need to differentiate
+\begin{itemize}
+\item $E$ w.r.t $\bfW$
+
+\item ${\cal S}$ w.r.t $\bfY_N$
+
+\item $\bfY_N$ w.r.t control variables ($\bfK_{0,\ldots,N-1},b_{0,\ldots,N-1}$)
+\end{itemize}
+
+\bigskip
+\pause
+
+Having these, apply chain rule to get, e.g.,
+$$
+\grad_{\bfK_j} E =  \left(\bfJ_{\bfK_j} {\bfY_N}\right)^{\top} \grad_{\bfY_N} E
+$$
+
+How? Adjoint method~\cite{bliss1919,BorzSchulz2012} (more general than back propagation~\cite{Rumelhart1986})
+\end{frame}
+
+
+\begin{frame}\frametitle{Computing Derivatives - Sensitivity Equation}
+Idea: Differentiate the forward propagation (forward Euler) with respect to $\bfK_i$ for fixed  $0\leq i \leq N$. Note that
+$$
+	\bfJ_{\bfK_i} \bfY_j = 0, \quad \text{ for } \quad j\leq i. 
+$$
+
+\smallskip
+\pause
+
+Next, note that 
+$$
+\bfJ_{\bfK_j} \bfY_{i+1} = h {\rm diag}(\sigma'( \bfK_i \bfY_i + b_i))
+(  \bfY_i^\top \otimes \bfI)
+$$
+
+\smallskip
+\pause
+
+Continuing like this, gives for the final state:
+\begin{eqnarray*}
+\bfJ_{\bfK_i}\bfY_{N} & =& \bfP_{N-1}  \bfJ_{\bfK_i}\bfY_{N-1}  \\
+	&  +& h {\rm diag}(\sigma'( \cdots)) \left( ( \bfI \otimes \bfK_{N-1}) \bfJ_{\bfK_i}\bfY_{N-1}\right) 
+\end{eqnarray*}
+\smallskip
+\pause
+Next: Write this as a block triangular {\bf linear} system.
+\end{frame}
+
+
+\begin{frame}\frametitle{Computing Derivatives - Sensitivity Equations}
+
+Block triangular {\bf linear} system for the gradients
+{\small
+\begin{eqnarray*}
+\begin{pmatrix}
+\bfI              &                &                &          &       \\
+-\bfT_{i+1}    &   \bfI       &                &          &       \\
+                    & \ddots    &  \ddots    &          &      \\
+                    &     &      &          &      \\
+                    &     &        &   -\bfT_{N-1}       & \bfI
+                    \end{pmatrix}
+                    \begin{pmatrix}
+                    \bfJ_{\bfK_i}\bfY_{i+1} \\    \\   \\ \\   \bfJ_{\bfK_i}\bfY_{N}
+                    \end{pmatrix} =
+                    \begin{pmatrix}
+                    \bfR_i \\  0\\  \vdots \\ \\   0
+                    \end{pmatrix}
+\end{eqnarray*}}
+
+
+$$\bfT_j = \bfP_j + h {\rm diag}(\sigma'( \bfK_j \bfY_j+ b_j))
+(\bfI \otimes \bfK_j) $$
+
+and 
+
+$$ \bfR_i = h {\rm diag}(\sigma'(\bfK_i \bfY_i  + b_i)) ( \bfY_i^\top \otimes \bfI). $$
+
+
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Computing Derivatives - Sensitivity Equation}
+
+Block triangular {\bf linear} system for the gradients
+{\small
+\begin{eqnarray*}
+	\underbrace{
+\begin{pmatrix}
+\bfI              &                &                &          &       \\
+-\bfT_{i+1}    &   \bfI       &                &          &       \\
+                    & \ddots    &  \ddots    &          &      \\
+                    &     &      &          &      \\
+                    &     &        &   -\bfT_{N-1}       & \bfI
+                    \end{pmatrix}}_{=\bfT}
+					\underbrace{
+                    \begin{pmatrix}
+                    \bfJ_{\bfK_i}\bfY_{i+1} \\    \\   \\ \\   \bfJ_{\bfK_i}\bfY_{N}
+                    \end{pmatrix}}_{= {\bfJ_{\bfK_i} \bfY}} =
+					\underbrace{
+                    \begin{pmatrix}
+                    \bfR_i \\  0\\  \vdots \\ \\    0
+                    \end{pmatrix}}_{=\bfR}
+\end{eqnarray*}}
+
+To compute matrix-vector product $(\bfJ_{\bfK_i}\bfY_{N})\, \bfv$
+\begin{itemize}
+\item Multiply $\bfR\, \bfv$
+\item Solve (forward propagate) $\bfT\, \bfJ_{\bfK_i}\bfY = \bfR\, \bfv$
+\item Extract the last time step
+\end{itemize}
+
+\end{frame}
+
+\section{Summary} % (fold)
+\label{sec:numerical_optimization}
+\begin{frame}[fragile]\frametitle{$\Sigma$: Optimal Control}
+
+Biggest question: Continuous vs. discrete
+$$ \min_{\bfW, \bfY(T,\bftheta)}E\left(
+\bfW \bfY(T,\bftheta),\bfC^{\rm obs}\right) 
+\; \text{ vs. }\;
+ \min_{\bfW, \bfY_N(\bftheta)}E\left(
+\bfW \bfY_N(\bftheta),\bfC^{\rm obs}\right) $$
+
+Continuous model
+\begin{itemize}
+	\item[+] can help initialization (easy to add layers)
+	\item[+] simplifies analysis and insight
+	\item[+] inspires better architectures (discrete!)
+	\item[-] high accuracy needs high computational costs
+	\item[-] meaningful (dynamics not derived from 1st principles?)
+\end{itemize}
+
+Discrete model
+\begin{itemize}
+	\item[+] back propagation easier than solving adjoint equations
+	\item[+] accurate gradients even for large time steps
+	\item[+] computationally more efficient
+	\item[-] may 'overfit' on a given discretization
+	\item[-] need careful discretization
+\end{itemize}
+
+\end{frame}
+
+
+% \begin{frame}\frametitle{The Sensitivity Equation}
+%
+%
+% Symbolically
+%
+% $$ \bfJ_{\bfK_i}\bfY_{N}  = \bfQ \bfT^{-1}  \bfR  $$
+% where
+% $$\bfQ = [0,\ldots,\bfI]. $$
+%
+%
+% \bigskip
+%
+% The transpose
+%
+% $$ \left(\bfJ_{\bfK_i}\bfY_{N}\right)^{\top} =  \bfR^{\top} \bfT^{-T} \bfQ^{\top} $$
+%
+%
+% \end{frame}
+%
+% \begin{frame}\frametitle{The Sensitivity Equation}
+%
+% $$ \left(\grad_{\bfK_i}\bfY_{N}\right)^{\top} =  \bfR^{\top} \bfT^{-T} \bfQ^{\top} $$
+%
+%
+% {\small
+% \begin{eqnarray*}
+% \begin{pmatrix} \bfR_i^{\top}  &   0   &  \hdots     &   & 0 \end{pmatrix}
+% \begin{pmatrix}
+% \bfI              &  -\bfT_{i+1}^{\top}  &                &          &       \\
+%                     &   \bfI       &     -\bfT_{i+2}^{\top}           &          &       \\
+%                     &     &  \ddots    &    \ddots      &      \\
+%                     &     &      &    \bfI      &  -\bfT_{N}    \\
+%                     &     &        &          & \bfI
+%                     \end{pmatrix}^{-1}
+%   \begin{pmatrix} 0 \\    \\   \vdots  \\    \\  \bfI \end{pmatrix}
+% \end{eqnarray*}
+% }
+%
+%
+%
+% To multiply by the transpose
+% \begin{itemize}
+% \item Initialize with last step
+% \item {\bf solve backward} in time
+% \item Extract the first step and multiply by $\bfR_i^{\top} $
+% \end{itemize}
+%
+% \end{frame}
+%
+% \begin{frame}\frametitle{More about the sensitivity equation}
+%
+% To compute $({\bfJ_{\bfK_i}}\bfY_N)^{\top} $ for all $i$'s note that the same quantities
+% are recomputed. Can be evaluated in ${\cal O}(N)$ steps
+%
+% \bigskip
+%
+% For gradient based method the transpose is sufficient
+%
+% \bigskip
+%
+% Newton based methods require both forward sensitivities and adjoint.
+%
+%
+% \end{frame}
+
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

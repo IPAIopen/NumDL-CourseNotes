@@ -12,11 +12,35 @@
 
 \makebeamertitle
 
-\input{slides/introNonlinearModels.tex}
+\section{Introduction}
 
 \input{slides/introNonlinearModels.tex}
 
-\begin{frame}\frametitle{Example: Linear Fitting}
+\begin{frame}
+	\frametitle{Learning Objective: Single-Layer Neural Networks}
+	
+	In this module, we derive our first nonlinear model, i.e., a neural network with a single layer.
+	
+	\bigskip
+	
+	Learning tasks:
+	\begin{itemize}
+		\item classification $\leadsto$ multinomial logistic regression
+		\item regression $ \leadsto$ nonlinear least-squares
+	\end{itemize}
+	
+	\bigskip
+	
+	Numerical methods:
+	\begin{itemize}
+		\item Sample Average Approximation: Newton-CG, VarPro, \ldots
+		\item Stochastic Optimization: SGD, ADAM, \ldots
+	\end{itemize}
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Example: Linear Regression}
 
 
 Assume $\bfC\in \R^{n_c\times n}$, $\bfY \in \R^{n_f \times n}$ and $n \gg n_f$.
@@ -27,7 +51,7 @@ $$ \bfC = \bfW \bfY $$
 \bigskip
 \pause
 
-If ${\rm rank}(\bfY)<n$, there may be no solution.
+Since ${\rm rank}(\bfY)<n$, there will generally be no solution.
 
 \bigskip
 \pause
@@ -39,7 +63,6 @@ Two options:
 \end{enumerate}
 
 \end{frame}
-
 
 \begin{frame}\frametitle{Illustrating Nonlinear Models}
 
@@ -64,30 +87,28 @@ Remarks
 \only<beamer|2>{}
 \end{frame}
 
-
-
-
-\begin{frame}[fragile]\frametitle{Conjecture: Universal Approximation Properties}
+\begin{frame}\frametitle{Conjecture: Universal Approximation Properties}
 
 Given the data $\bfY \in \R^{n_f \times n}$ and $\bfC \in \R^{n_c \times n}$
-with $n\gg n_f$, there is nonlinear function $\sigma:\R \to \R$, a matrix $\bfK \in \R^{m \times n_f}$, and a bias $\bfb \in \R^m$ such that
+with $n\gg n_f$, there is a nonlinear function $\sigma:\R \to \R$, a matrix $\bfK \in \R^{m \times n_f}$, and a bias $\bfb \in \R^m$ such that
 
 $$
- {\rm rank}(\sigma(\bfK \bfY + \bfb)) = n.
+ {\rm rank}(\sigma(\bfK \bfY + \bfb \bfe_n^\top)) = n.
 $$
 
 \bigskip
 \pause
-Therefore, possible~\cite{Cybenko1989,HornikEtAl1989} to find ${\bfW}\in\R^{n_c\times m}$
+Therefore, possible to find ${\bfW}\in\R^{n_c\times m}$
 
-$$\bfW \sigma( \bfK \bfY + \bfb) = \bfC.$$
+$$\bfW \sigma( \bfK \bfY + \bfb\bfe_n^\top) = \bfC.$$
 
+This is only a conjecture. For solid approximation theory see~\cite{Cybenko1989,HornikEtAl1989}.
 \end{frame}
 
 
-\begin{frame}[fragile]\frametitle{Choosing Nonlinear Model}
+\begin{frame}\frametitle{Choosing Nonlinear Model}
 
-$$ \bfW  \sigma(\bfK \bfY+ \bfb)= \bfC $$
+$$ \bfW  \sigma(\bfK \bfY+ \bfb\bfe_n^\top)= \bfC $$
 \begin{itemize}
 \item how to choose $\sigma$?
 \pause
@@ -105,20 +126,18 @@ $$ \bfW  \sigma(\bfK \bfY+ \bfb)= \bfC $$
 	\item \emph{deep learning} when neural network has many layers
 \end{itemize}
 \end{itemize}
-
-
 \end{frame}
 
-\begin{frame}\frametitle{First Experiment: Random Transformation}
+\begin{frame}\frametitle{Extreme Learning Machines~\cite{HuangEtAl2006}}
 
-Select activation function and choose $\bfK$ and $\bfb$ randomly and solve the least-squares/classification problem
+Select activation function, choose $\bfK$ and $\bfb$ randomly, and solve the linear least-squares/classification problem.
 
 \bigskip
 
-The Pros:
+Advantages:
 \begin{itemize}
 \item universal approximation theorem: can interpolate any function
-\item very(!) easy to program
+\item very(!) easy to program, convex optimization
 \item can serve as a benchmark to more sophisticated methods
 \end{itemize}
 
@@ -128,37 +147,38 @@ Some concerns:
 \begin{itemize}
 \item may require very large $\bfK$ (scale with $n$, number of examples)
 \item may not generalize well
-\item large dense linear algebra
+\item large-scale optimization problem with no obvious structure
 \end{itemize}
 
-\begin{center}
-	\texttt{EELM\_Peaks.m}
-\end{center}
+% \begin{center}
+% \end{frame}
+% 	\texttt{EELM\_Peaks.m}
+% \end{center}
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Learning the Weights}
+\section{Objective Function}
 
-Assume that the number of examples, $n$, is very large.
+\begin{frame}\frametitle{Today: Learning the Weights}
 
-Using random weights, $\bfK$ might need to be very large to fit training data.
 
-Solution may not generalize well to test data.
+Why? Using random weights, $\bfK$ might need to be very large to fit training data (scales with $n$).
+
+Also, solution may not generalize well to test data.
 
 \bigskip
 \pause
 
-Idea: Learn $\bfK$ and $b$  from the data (in addition to $\bfW$)
+Idea: Learn $\bfK$ and $\bfb$  from the data (in addition to $\bfW$)
 
-$$ \min_{\bfK,\bfW,b} E(\bfW\sigma(\bfK \bfY + \bfb), \bfC^{\rm obs}) + \lambda R(\bfW,\bfK,\bfb)$$
+$$ \min_{\bfK,\bfW,\bfb} E(\bfW\sigma(\bfK \bfY + \bfb\bfe_n^\top), \bfC_{\rm obs}) + \lambda R(\bfW,\bfK,\bfb)$$
 
 About this optimization problem:
 \begin{itemize}
-	\item more unknowns $\bfK \in \R^{m \times n_f}$, $\bfW \in \R^{n_c \times m}$, $\bfb \in \R^m$
+	\item unknowns $\bfW \in \R^{n_c \times m}$, $\bfK \in \R^{m \times n_f}$,  $\bfb \in \R^m$
+	\item new hyper-parameter $m$ (aka width, number of neurons)
 	\item  non-convex problem $\leadsto$ local minima, careful initialization
 	\item need to compute derivatives w.r.t. $\bfK, \bfb$
 \end{itemize}
-
-
 \end{frame}
 
 
@@ -169,34 +189,35 @@ About this optimization problem:
 	\begin{center}
 		\includegraphics[width=.6\textwidth]{nonConvexitySingleLayer}
 		
-		(see \texttt{ESingleLayer\_PlotObjective.m})
+		% (see \texttt{ESingleLayer\_PlotObjective.m})
 	\bigskip
 	
 	Expect worse when number of layers grows!
 	\end{center}
 
 \end{frame}
-\begin{frame}[fragile]\frametitle{Training the Neural Network}
+% \begin{frame}[fragile]\frametitle{Training the Neural Network}
+%
+% \begin{itemize}
+% \item If non-convexity is not ``too bad'' can use standard gradient based methods
+% \item If non-convexity is ``ugly'' need to modify standard methods (stochastic kick)
+% \item If non-convexity is ``bad'' need global optimization techniques
+% \end{itemize}
+%
+% 	\begin{center}
+% 	\begin{tabular}{ccc}
+% 		\includegraphics[width=.3\textwidth]{images/goodConv} &
+% 		\includegraphics[width=.3\textwidth]{images/badConv} &
+% 		\includegraphics[width=.3\textwidth]{images/uglyConv} \\
+% 		good & bad & ugly \\
+% 		\end{tabular}
+% 		\end{center}
+%
+%
+%
+% \end{frame}
 
-\begin{itemize}
-\item If non-convexity is not ``too bad'' can use standard gradient based methods
-\item If non-convexity is ``ugly'' need to modify standard methods (stochastic kick)
-\item If non-convexity is ``bad'' need global optimization techniques
-\end{itemize}
-
-	\begin{center}
-	\begin{tabular}{ccc}
-		\includegraphics[width=.3\textwidth]{images/goodConv} &
-		\includegraphics[width=.3\textwidth]{images/badConv} &
-		\includegraphics[width=.3\textwidth]{images/uglyConv} \\
-		good & bad & ugly \\
-		\end{tabular}
-		\end{center}
-
-
-
-\end{frame}
-\begin{frame}[fragile]\frametitle{Recap: Differentiating Linear Algebra Expressions}
+\begin{frame}\frametitle{Recap: Differentiating Linear Algebra Expressions}
 
 Easy ones:
 \begin{align*}
@@ -204,25 +225,25 @@ Easy ones:
 F_2(\bfA,\bfx)  &= \bfA \bfx         & \bfJ_{\bfx}F_2(\bfx,\bfy) = \bfA 
 \end{align*}
 \pause
-How about
-$$ F_3(\bfA,\bfX) =   \bfA  \bfX \quad \quad \bfJ_{{\rm vec}(\bfX)}F_3 = ??? $$
+For $\bfx = {\rm vec}(\bfX)$ what is
+$$ F_3(\bfA,\bfX) =   \bfA  \bfX \quad \quad \bfJ_{\bfx} F_3 = ??? $$
 \pause
 Recall that
 $${\rm vec}(\bfA \bfX) = {\rm vec}(\bfA  \bfX \bfI) = (\bfI \otimes \bfA) {\rm vec} (\bfX) $$
 Therefore:
-$$ \bfJ_{{\rm vec}(\bfX)}F_3(\bfA,\bfX) = \bfI \otimes \bfA $$
+$$ \bfJ_{\bfx}F_3(\bfA,\bfX) = \bfI \otimes \bfA $$
 \pause
 \textcolor{red}{
-Efficient mat-vec: } $\bfJ_{{\rm vec}(\bfX)}F \bfv = {\rm vec} ( { \bfA\ \rm mat}(\bfv) )$
+Efficient mat-vec: } $\bfJ_{\bfX}F_3(\bfA,\bfX) \bfv = { \bfA\ \rm mat}(\bfv)$
 	
 \end{frame}
 
 
-\begin{frame}[fragile]\frametitle{Training Single Layer Neural Network}
+\begin{frame}\frametitle{Training Single Layer Neural Network}
 
 Assume no regularization (easy to add) and re-write optimization problem as 
 \begin{eqnarray*}
- \min_{\bfW,\bfK,b}  E(\bfC^{\rm obs}, \bfZ,\bfW ) \quad \text{ with} \quad \bfZ = \sigma(\bfK\bfY + b)
+ \min_{\bfW,\bfK,\bfb}  E(\bfC_{\rm obs}, \bfZ,\bfW ) \quad \text{ with} \quad \bfZ = \sigma(\bfK\bfY + \bfb \bfe_n^\top)
 \end{eqnarray*}
 
 \bigskip
@@ -230,34 +251,34 @@ Assume no regularization (easy to add) and re-write optimization problem as
 
 Agenda:
 \begin{enumerate}
-	\item compute derivative of ${\rm vec}(\bfZ)$ w.r.t. ${\rm vec}(\bfK), b$ 
+	\item compute derivative of $\bfz={\rm vec}(\bfZ)$ w.r.t. ${\rm vec}(\bfK), \bfb$ 
 	\item use chain rule to get
 	\begin{align*}
-		\bfJ_{{\rm vec}(\bfK)} E  & = \bfJ_{{\rm vec}(\bfZ)} E(\bfC^{\rm obs},\bfZ,\bfW) \ \bfJ_{{\rm vec}(\bfK)} \bfZ\\
-		\bfJ_{b} E  & = \bfJ_{{\rm vec}(\bfZ)} E(\bfC^{\rm obs},\bfZ,\bfW) \ \bfJ_{b} \bfZ
+		\bfJ_{{\rm vec}(\bfK)} E  & = \bfJ_{{\rm vec}(\bfZ)} E(\bfC_{\rm obs},\bfZ,\bfW) \ \bfJ_{{\rm vec}(\bfK)} \bfZ\\
+		\bfJ_{\bfb} E  & = \bfJ_{{\rm vec}(\bfZ)} E(\bfC_{\rm obs},\bfZ,\bfW) \ \bfJ_{\bfb} \bfZ
 	\end{align*}
 	\item efficient code for mat-vecs with $\bfJ$ and $\bfJ^\top$
 \end{enumerate} 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Computing Jacobians}
+\begin{frame}\frametitle{Derivatives of a Single Layer Network}
 $$
-\bfZ = \sigma(\bfK\bfY + b)
+\bfZ = \sigma(\bfK\bfY + \bfb \bfe_n^\top)
 $$
-Recall that $\sigma$ is applied element-wise.
+Recall that $\sigma$ is applied element-wise. Therefore
 $$
-	\bfJ_{{\rm vec}(\bfK)}\bfZ = {\rm diag}(\sigma'(\bfK \bfY + b)) (\bfY^\top \otimes \bfI)
+	\bfJ_{{\rm vec}(\bfK)}\bfZ = {\rm diag}(\sigma'(\bfK \bfY + \bfb \bfe_n^\top)) (\bfY^\top \otimes \bfI)
 $$
 \pause
 Efficient way to get matrix vector products
 \begin{eqnarray*}
-\bfJ_{{\rm vec}(\bfK)}\bfZ \bfv &=& {\rm diag}(\sigma'(\bfK \bfY + b)) (\bfY^\top \otimes \bfI)\bfv\\
-                            &=& {\rm vec} \left(\sigma'(\bfK \bfY + b) \odot ( {\rm mat}(\bfv) \bfY )\right)
+\bfJ_{\bfK}\bfZ \bfv &=& {\rm mat} \left({\rm diag}(\sigma'(\bfK \bfY + \bfb\bfe_n^\top)\  (\bfY^\top \otimes \bfI)\bfv\right)\\
+                            &=& \sigma'(\bfK \bfY + \bfb \bfe_n^\top) \odot ( {\rm mat}(\bfv) \bfY )
 \end{eqnarray*}
-And for transpose get
+And for transpose
 \begin{eqnarray*}
-(\bfJ_{{\rm vec}(\bfK)}\bfZ)^\top \bfu &=& (\bfY \otimes \bfI) {\rm diag}(\sigma'(\bfK \bfY + b)) \bfu\\
-                            &=& {\rm vec} \left(\sigma'(\bfK \bfY + b) \odot  {\rm mat}(\bfu)\bfY^\top\right) 
+(\bfJ_{\bfK}\bfZ)^\top \bfu &=&  {\rm mat} \left( (\bfY \otimes \bfI) \ {\rm diag}(\sigma'(\bfK \bfY + \bfb\bfe_n^\top)) \bfu \right)\\
+                            &=& (\sigma'(\bfK \bfY + \bfb\bfe_n^\top) \odot  {\rm mat}(\bfu))\  \bfY^\top
 \end{eqnarray*}
 
 \end{frame}
@@ -265,14 +286,14 @@ And for transpose get
 
 
 
-\begin{frame}[fragile]\frametitle{Class Problems: Derivatives of Single Layer}
+\begin{frame}[fragile]\frametitle{Coding Problem: Derivatives of Single Layer}
 
 \textbf{Derivations:}
 \begin{enumerate}
 	
-	\item Compute $\bfJ_{b}\bfZ v$ and $(\bfJ_{b}\bfZ)^\top \bfu$
+	\item compute $\bfJ_{\bfb}\bfZ \bfv$ and $(\bfJ_{\bfb}\bfZ)^\top \bfu$
 
-	\item Compute $\bfJ_{{\rm vec}(\bfY)}\bfZ  \bfv$ and $(\bfJ_{{\rm vec}(\bfY)}\bfZ)^\top  \bfu$
+	\item (optional) compute $\bfJ_{{\rm vec}(\bfY)}\bfZ  \bfv$ and $(\bfJ_{{\rm vec}(\bfY)}\bfZ)^\top  \bfu$
 \end{enumerate}
 
 \textbf{Coding:}
@@ -299,7 +320,7 @@ function[Z,JKt,Jbt,JYt,JK,Jb,JY] = singleLayer(K,b,Y)
 	
 	Implement loss function of single-layer NN
 	$$
-		E(\bfK,b,\bfW) \stackrel{def}{=} E(\bfC,\bfZ,\bfW), \quad \bfZ = \sigma(\bfK \bfY+b)
+		E(\bfK,\bfb,\bfW) \stackrel{def}{=} E(\bfC,\bfZ,\bfW), \quad \bfZ = \sigma(\bfK \bfY+\bfb\bfe_n^\top)
 	$$
 	
 	
@@ -323,38 +344,65 @@ function[Z,JKt,Jbt,JYt,JK,Jb,JY] = singleLayer(K,b,Y)
 	
 \end{frame}
 
-\begin{frame}[fragile]
-	\frametitle{Test Problem}
-	
-	Before going to real data, let us try the \emph{inverse crime}. Generate data
-	\begin{verbatim}
-		n  = 500; nf = 50; nc = 10; m  = 40;
-		Wtrue = randn(nc,m);
-		Ktrue = randn(m,nf);
-		btrue = .1;
 
-		Y     = randn(nf,n);
-		Cobs  = exp(Wtrue*singleLayer(Ktrue,btrue,Y));
-		Cobs  = Cobs./sum(Cobs,1);		
-	\end{verbatim}
+
+
+\section{Sample Average Approximation}
+
+\begin{frame}
+	\frametitle{Sample Average Approximation (SAA)}
 	
-	\begin{center}
-	Goal: Reconstruct \texttt{Wtrue, Ktrue, btrue}!  
-	\end{center}
+	Note that the objective function in our learning problem is actually stochastic
+	$$
+	\frac{1}{n}E(\bfW \sigma(\bfK\bfY+\bfb\bfe_n^\top),\bfC_{\rm obs}) =  {\mathbb{E}}_{(\bfy,\bfc)}\left[E\left(\bfW \sigma(\bfK\bfy+\bfb),\bfc\right)\right]
+	$$
+	In general, $n$ will be too large to compute left hand side $\leadsto$ consider stochastic problem.
+	
+	\bigskip
+	SAA idea:  Approximate expected value with relatively large sample $S \subset \{ 1,\ldots,n\}$. Use deterministic optimization method  
+			$$
+				\min_{\bfK,\bfb,\bfW}  \frac{1}{|S|} \sum_{s\in S} E\left(\bfW \sigma(\bfK\bfy+\bfb),\bfc\right).
+			$$
+		
+			Pro: use your favorite solver, linesearch, stopping\ldots
+			
+			Con: large batches needed
+			
+			\begin{center}
+				Note: Sample stays fixed during iteration, but occasional resampling recommended.
+			\end{center}
 \end{frame}
 
 \begin{frame}
-	\frametitle{Gauss-Newton Method}
+	\frametitle{Simple Option: BFGS, NLCG, \ldots}
+	
+	Since we have computed the gradient of our objective function, we can experiment with a wide range of methods already. 
+	
+	\bigskip
+	
+	Some candidates from \texttt{scipy.optimize.minimize} are:
+	\begin{itemize}
+		\item \texttt{CG} - nonlinear conjugate gradient
+		\item \texttt{BFGS} 
+		\item \texttt{Newton-CG} - attention: Hessian not spsd
+		\item \texttt{trust-ncg} 
+	\end{itemize}
+	Note that for the latter two, Hessian mat-vecs will be approximated numerically (not very stable).
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Better Option: Gauss-Newton Method}
 	
 	\textbf{Goal:} Use curvature information for fast convergence
 	$$
-	\nabla_{\bfK} E(\bfK,\bfb,\bfW) =  (\bfJ_\bfK \bfZ)^\top \nabla_\bfZ E(\bfW\sigma(\bfK \bfY+\bfb),\bfC),
+	\nabla_{\bfK} E(\bfK,\bfb,\bfW) =  (\bfJ_\bfK \bfZ)^\top \nabla_\bfZ E(\bfW\sigma(\bfK \bfY+\bfb\bfe_n^\top),\bfC),
 	$$
-	where $\bfJ_\bfK \bfZ = \nabla_{\bfK} \sigma(\bfK \bfY+\bfb)^\top$.\pause This means that Hessian is
+	where $\bfJ_\bfK \bfZ = \nabla_{\bfK} \sigma(\bfK \bfY+\bfb\bfe_n^\top)^\top$.\pause This means that Hessian is
 	\begin{equation*}
 		\begin{split}
 	\nabla_{\bfK}^2 E(\bfK) &  = (\bfJ_{\bfK}\bfZ)^\top  \nabla_\bfZ^2 E(\bfC,\bfZ,\bfW) \bfJ_{\bfK}\bfZ\\
-	 & + \sum_{i=1}^{n}\sum_{j=1}^{m} \nabla_{\bfK}^2 \sigma(\bfK \bfY+\bfb)_{ij} \nabla_\bfZ E(\bfC,\bfZ,\bfW)_{ij}
+	 & + \sum_{i=1}^{n}\sum_{j=1}^{m} \nabla_{\bfK}^2 \sigma(\bfK \bfY+\bfb\bfe_n^\top)_{ij} \nabla_\bfZ E(\bfC,\bfZ,\bfW)_{ij}
 		\end{split}
 	\end{equation*}
 	
@@ -368,69 +416,17 @@ function[Z,JKt,Jbt,JYt,JK,Jb,JY] = singleLayer(K,b,Y)
 		\item small if transformation is roughly linear or close to solution (easy to see for least-squares)
 	\end{itemize}
 	\begin{center}
-		\textcolor{red}{do the same for $\bfb$ and use full Hessian for $\bfW$ $\leadsto$ ignore coupling!}
+		\textcolor{red}{same for $\bfb$ and use full Hessian for $\bfW$ $\leadsto$ ignore coupling!}
 	\end{center}	
 \end{frame}
 
-\begin{frame}[fragile]
-	\frametitle{Experiment: Adversarial Example}
-	
-	Suppose you have trained your network $\leadsto \bfK, b, \bfW$ so that validation loss is low. This means that for most examples $\bfy$, 
-	$$
-		\bfW \sigma(\bfK \bfy + b) \approx \bfc.
-	$$
-	
-	An adversary might try to fool this classifier by adding a small perturbation $\bfd$ to the example to achieve a desired label $\hat{\bfc}$. 
-	
-	\bigskip
-	
-	Formulate as optimization problem
-	$$
-		\min_{\bfd} E(\bfW \sigma(\bfK (\bfy + \bfd) + b), \hat{\bfc})
-	$$
-	\begin{itemize}
-		\item setup objective function
-		\item think about constraints, regularization
-	\end{itemize}
-\end{frame}
 
-
-\end{document}
-\begin{frame}[fragile]\frametitle{Learning the weights}
-
-{\bf Class problem}
-
-\bigskip
-
-
-Code a function
-\small
-\end{frame}
-
-
-\begin{frame}[fragile]\frametitle{Overview}
-
-Given data $\bfY \in \R^{n_f\times n}$ and class probabilities $\bfC\in\R^{n_c\times n}$ we aim to find the transformation parameters $\bftheta\in\R^p$ and classification weights (including potentially biases) $\bfW \in \R^{n_c \times m}$ by solving
-$$
-\min_{\bftheta,\bfW} E(\bfW \sigma(\bfK(\bftheta)\bfY), \bfC) + \lambda R(\bftheta,\bfW)
-$$
-
-Today: Derive practical pipeline consisting of 
-\begin{itemize}
-	\item variable projection
-	\item Stochastic Average Approximation (SAA)
-	\item regularization
-\end{itemize}
-
-
-\end{frame}
-
-\begin{frame}\frametitle{Variable Projection - 1}
-	Idea: Treat learning problem as coupled optimization problem with blocks $\bftheta=(\bfK,\bfb)$ and $\bfW$. 
+\begin{frame}\frametitle{Even Better Option: Variable Projection~\cite{NewmanEtAl2020}}
+	Idea: Treat learning problem as coupled optimization problem with blocks $\bftheta$ and $\bfW$. 
 	
 	Simple illustration for coupled least-squares problem~\cite{GoPe1973,GoPe03,OLearyRust2013}
 	$$
-		\min_{\bftheta,\bfw} \phi(\bftheta,\bfw) = \hf \| \bfA(\bftheta) \bfw - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
+		\min_{\bftheta,\bfw} J(\bftheta,\bfw) = \hf \| \bfA(\bftheta) \bfw - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
 	
 	\pause
@@ -443,28 +439,28 @@ Today: Derive practical pipeline consisting of
 	\pause
 	This gives optimization problem in $\bftheta$ only (aka \emph{reduced/projected  problem})
 	$$
-		\min_{\bftheta} \tilde{\phi}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
+		\min_{\bftheta} \tilde{J}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
 	
 \end{frame}
-\begin{frame}\frametitle{Variable Projection - 2}
+\begin{frame}\frametitle{ Variable Projection (cont.)}
 	$$
-		\min_{\bftheta} \tilde{\phi}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
+		\min_{\bftheta} \tilde{J}(\bftheta) = \hf \| \bfA(\bftheta) \bfw(\bftheta) - \bfc\|^2 + \frac{\lambda}{2}\| \bfL \bfw(\bftheta)\|^2 + \frac{\beta}{2} \| \bfM \bftheta\|^2
 	$$
-	Optimality condition:
+	Necessary optimality condition:
 	$$ 
-		\nabla \tilde{\phi}(\bftheta) = \nabla_\bftheta \phi(\bftheta,\bfw) + \nabla_\bftheta \bfw(\bftheta) \nabla_{\bfw} \phi(\bftheta,\bfw) \stackrel{!}{=} 0.
+		\nabla \tilde{J}(\bftheta) = \nabla_\bftheta J(\bftheta,\bfw) + \nabla_\bftheta \bfw(\bftheta) \nabla_{\bfw} J(\bftheta,\bfw) \stackrel{!}{=} 0.
 	$$
 	Less complicated than it seems since
 	$$
-		\nabla_{\bfw} \phi(\bftheta,\bfw(\bftheta)) = \bfA(\bftheta)^\top( \bfA(\bftheta) \bfw(\bftheta) - \bfc) + \lambda \bfL^\top \bfL \bfw(\bftheta) = 0
+		\nabla_{\bfw} J(\bftheta,\bfw(\bftheta)) = \bfA(\bftheta)^\top( \bfA(\bftheta) \bfw(\bftheta) - \bfc) + \lambda \bfL^\top \bfL \bfw(\bftheta) = 0
 	$$
 	
 	Discussion:
 	\begin{itemize}
 		\item ignore second term in gradient computation
-		\item apply gradient descent/NLCG/BFGS  to minimize $\tilde{\phi}$
-		\item solve least-squares problem in each evaluation of $\tilde{\phi}$
+		\item apply gradient descent/NLCG/BFGS  to minimize $\tilde{J}$
+		\item solve least-squares problem in each evaluation of $\tilde{J}$
 		\item gradient is only correct if LS problem is solved exactly
 	\end{itemize}
 	
@@ -474,70 +470,61 @@ Today: Derive practical pipeline consisting of
 	\frametitle{Variable Projection for Single Layer}
 	
 $$
-\min_{\bftheta,\bfW} E(\bfW \sigma(\bfK(\bftheta)\bfY ), \bfC) + \lambda R(\bftheta,\bfW)
+\min_{\bfK,\bfb,\bfW} E(\bfW \sigma(\bfK\bfY +\bfb \bfe_n^\top ), \bfC) + \lambda R(\bftheta,\bfW)
 $$
 Assume that the regularizer is separable, i.e.,
 $$
- R(\bftheta,\bfW) =   R_1(\bftheta) +  R_2(\bfW)
+ R(\bfK,\bfb,\bfW) =   R_1(\bfK,\bfb) +  R_2(\bfW)
 $$
 and that $R_2$ is convex and smooth. 
 \pause
 Hence, the projection requires solving the regularized classification problem
 $$
-\bfW(\bftheta) = \argmin_{\bfW} E(\bfW\sigma(\bfK(\bftheta)\bfY), \bfC) + \lambda R_2(\bfW)
+\bfW(\bfK,\bfb) = \argmin_{\bfW} E(\bfW\sigma(\bfK\bfY + \bfb \bfe_n^\top), \bfC) + \lambda R_2(\bfW)
 $$
 practical considerations:
 \begin{itemize}
-	\item solve for $\bfW(\bftheta)$ using Newton (need accuracy)
-	\item need good solver to approximate gradient w.r.t. $\bftheta$  well
-	\item use Gauss-Newton or steepest descent to solve for $\bftheta$ 
+	\item solve for $\bfW(\bfK,\bfb)$ using SVD, Newton (need accuracy)
+	\item errors in $\bfW(\bfK,\bfb) \leadsto$ errors in $\nabla \tilde{J}(\bfK)$, $\nabla \tilde{J}(\bfb)$
+	\item use gradient-based minimization to solve for $\bfK,\bfb$ 
 \end{itemize}
 \end{frame}
 
-\begin{frame}\frametitle{Stochastic Optimization}
-	Assume that each $\bfy_i$, $\bfc_i$ pair is drawn from some (unknown probability distribution). 
+
+\begin{frame}
+	\frametitle{Practical Considerations in SAA}
 	
-	Then, we can interpret the learning problem as minimizing the expected value of the cross entropy, e.g., in linear regression
-	$$
-		E(\bftheta,\bfW) = {\mathbb{E}} \left(\hf \|\bfW \sigma(\bfK(\bftheta)\bfy + \bfb ) - \bfc\|^2\right)
+	Here is a simple but effective SAA-based training algorithm.
+	
+	\bigskip
+	\pause
+	
+	Pick $(\bfK_0,\bfb_0,\bfW_0)$ randomly and then do one or more steps of:
+	\begin{enumerate}
+		\item randomly select samples $S$ (large enough)
+		\item take a few minimization steps
+		\item check and print training error on current batch and validation error
+		\item repeat
+	\end{enumerate}
+	
+	\bigskip
+	\pause
+	
+	Possible problems:
+	\begin{itemize}
+		\item $|S|$ too small $\rightarrow$ training error small but no generalization
+		\item $|S|$ too large $\rightarrow$ training too slow
+		% \item Too few Newton steps in classification $\rightarrow$ inaccurate gradients, line search fails, \ldots
+	\end{itemize}	
+\end{frame}
+\begin{frame}\frametitle{Discussion: Sample Average Approximation}
+
+Idea: Approximate expected value with samples $S$
+$$
+	\frac{1}{|S|} \sum_{s\in S} E\left(\bfW \sigma(\bfK\bfy+\bfb),\bfc\right) \approx  {\mathbb{E}}_{(\bfy,\bfc)}\left[E\left(\bfW \sigma(\bfK\bfy+\bfb),\bfc\right)\right]
 	$$
 	
-	This is a stochastic optimization problem~\cite{bottou2016optimization}. \pause One idea: \textbf{Stochastic Approximation: } Design iteration $(\bftheta_k,\bfW_k) \to (\bftheta^*,\bfW^*)$ so that expected value decreases.
-		
-		Example: Stochastic Gradient Descent, ADAM, \ldots
-		
-		Pro: sample can be small (\emph{mini batch})
-		
-		Con: how to monitor objective, linesearch, descent, \ldots
-\end{frame}
-\begin{frame}[fragile]\frametitle{Review: Supervised Learning Problem}
-
-Most machine learning problems are of the following structure
-$$
-\min_{\bftheta} F(\bftheta,\bfY) + R(\bftheta), \quad \text{ with }\quad  F(\bftheta,\bfY) = \frac1n\sum_{i=1}^n f_i(\bftheta,\bfy_i).
-$$
-
-\bigskip
-\pause
-
-For shallow learning, problem might be convex or have a unique minimum.
-For deep networks, problem is usually not convex and has many local minimum
-
-\end{frame}
-
-\begin{frame}[fragile]\frametitle{Review - Optimization Techniques}
-
-So far, we used deterministic gradient-based methods
-$$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1} \grad F(\bftheta_k,\bfY), \quad  \nabla F(\bftheta,\bfY) = \frac1n  \sum_{i=1}^n \nabla f_i(\bftheta, \bfy_i)$$
-
-\smallskip 
-\pause
-
-Examples: 
-\begin{itemize}
-	\item steepest descent: $ \bfA_k = \bfI$
-	\item Newton: $\bfA_k = \nabla^{2} F(\bftheta,\bfY) = \sum_{i=1}^N \nabla^{2} f_i(\bftheta, \bfy_i)$
-\end{itemize}
+Advantage: Can use deterministic gradient-based methods, e.g., steepest descent, nonlinear CG, BFGS, Gauss-Newton, VarPro, \ldots
 
 \bigskip
 \pause
@@ -545,11 +532,8 @@ Examples:
 Drawbacks:
 \begin{itemize}
 \item
-Evaluating gradient needs pass through the whole data set (called \emph{epoch}).
-\item
-If data is redundant can be very expensive
-\item 
-Idea: use only a part of the data to update $\bftheta$
+Evaluating gradient needs pass through the entire sample.
+\item Sample size must be large enough to avoid overfitting
 \end{itemize} 
 
 
@@ -557,7 +541,83 @@ Idea: use only a part of the data to update $\bftheta$
 \end{frame}
 
 
+
+
+
+\section{Stochastic Approximation}
+
+% \begin{frame}[fragile]
+% 	\frametitle{Experiment: Adversarial Example}
+%
+% 	Suppose you have trained your network $\leadsto \bfK, b, \bfW$ so that validation loss is low. This means that for most examples $\bfy$,
+% 	$$
+% 		\bfW \sigma(\bfK \bfy + b) \approx \bfc.
+% 	$$
+%
+% 	An adversary might try to fool this classifier by adding a small perturbation $\bfd$ to the example to achieve a desired label $\hat{\bfc}$.
+%
+% 	\bigskip
+%
+% 	Formulate as optimization problem
+% 	$$
+% 		\min_{\bfd} E(\bfW \sigma(\bfK (\bfy + \bfd) + b), \hat{\bfc})
+% 	$$
+% 	\begin{itemize}
+% 		\item setup objective function
+% 		\item think about constraints, regularization
+% 	\end{itemize}
+% \end{frame}
+
+
+% \end{document}
+ 
+
+
+
+
+\begin{frame}\frametitle{Stochastic Approximation}
+	
+	Goal: minimize the expected loss
+	$$ {\mathbb{E}}_{(\bfy,\bfc)}\left[E\left(\bfW \sigma(\bfK\bfy+\bfb),\bfc\right)\right]$$
+	Assume that each $\bfy_i$, $\bfc_i$ pair is drawn from some (unknown probability distribution). 
+	This is a stochastic optimization problem~\cite{bottou2016optimization}. 
+	
+	\bigskip \pause
+	
+	Examples: iterations $(\bfK_k, \bfb_k ,\bfW_k) \to (\bfK^*, \bfb^*,\bfW^*)$ that (under certain conditions) decrease the expected value: Stochastic Gradient Descent, ADAM, \ldots
+		
+	\bigskip \pause
+	
+		Pro: sample can be small (\emph{mini batch}), often finds global minima for non-convex problems (not much theory though)
+	
+	\smallskip
+		
+		Con: how to monitor objective, linesearch, descent, \ldots
+\end{frame}
+
+
+% \begin{frame}[fragile]\frametitle{Review: Supervised Learning Problem}
+%
+% Most machine learning problems are of the following structure
+% $$
+% \min_{\bftheta} F(\bftheta,\bfY) + R(\bftheta), \quad \text{ with }\quad  F(\bftheta,\bfY) = \frac1n\sum_{i=1}^n f_i(\bftheta,\bfy_i).
+% $$
+%
+% \bigskip
+% \pause
+%
+% For shallow learning, problem might be convex or have a unique minimum.
+% For deep networks, problem is usually not convex and has many local minimum
+%
+% \end{frame}
+
+
+
 \begin{frame}[fragile]\frametitle{Stochastic Gradient Descent}
+Consider 
+$$
+\min_{\bftheta} F(\bftheta,\bfY), \quad \text{ with }\quad  F(\bftheta,\bfY) = \frac1n\sum_{i=1}^n f_i(\bftheta,\bfy_i).
+$$
 
 Let ${\cal S}_k \subset \{1,2,\ldots,n\}$. Define the batch objective function as 
 $$ F_{{\cal S}_k}(\bftheta) = \frac{1}{|{\cal S}_k|} \sum_{i \in {\cal S}_k} f_i(\bftheta,\bfY_i) $$
@@ -585,7 +645,7 @@ $$ \bftheta_{k+1} = \bftheta_k - \mu_k \bfA_k^{-1}  \grad F_{{\cal S}_k}(\bfthet
 \bigskip
 \pause
 
-If $\bfA_k = \bfI$, $|{\cal S}_k|=1$ and $\mu_k \rightarrow 0$ slow enough, that is
+If $f_i$ are convex, $\bfA_k = \bfI$, $|{\cal S}_k|=1$ and $\mu_k \rightarrow 0$ slowly enough, that is
 $$ \sum_{k=1}^{\infty} \mu_k= \infty \quad \text{ and } \quad \sum_{k=1}^{\infty} \mu_k^2 < \infty$$
 then SGD converges to stationary point \pause (Ex: $\mu_k = k^{-1}$).
 
@@ -676,7 +736,7 @@ $\mu$ - problem dependent start small and decrease after a few epoch
 	
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Theory and Final Comments}
+\begin{frame}[fragile]\frametitle{Discussion: Stochastic Approximation}
 
 General Comments:
 \begin{itemize}
@@ -699,70 +759,22 @@ SGD in deep learning:
 \end{itemize}
 \end{frame}
 
-\begin{frame}
-	\frametitle{Coding: Using SGD for Classification Problem}
-	
-	Outline:
-	\begin{itemize}
-		\item Use single layer or ResNet example
-		\item Change objective function to accept index set $S_k$
-		\item Use small minibatch
-		\item Test using peaks example
-	\end{itemize}
-\end{frame}
 
-\begin{frame}
-	\frametitle{Stochastic Average Approximation}
-	
-	Alternative way to solve stochastic optimization problem
-	$$
-	E(\bfW) = {\mathbb{E}} \left(\hf \| \bfW \sigma(\bfK(\bftheta)\bfy + \bfb) - \bfc\|^2\right)
-	$$
-	
-	 Pick relatively large sample $S \subset \{ 1,\ldots,n\}$ and use deterministic optimization method to solve
-			$$
-				\min_{\bftheta,\bfW}  \frac{1}{2|S|} \sum_{s\in S} \| \bfW \sigma(\bfK(\bftheta)\bfy_s + \bfb )  - \bfc_s^\top \|^2.
-			$$
-		
-			Pro: use your favorite solver, linesearch, stopping\ldots
-			
-			Con: large batches needed
-			
-			\begin{center}
-				Note: Sample stays fixed during iteration.
-			\end{center}
-\end{frame}
+% \begin{frame}
+% 	\frametitle{Coding: Using SGD for Classification Problem}
+%
+% 	Outline:
+% 	\begin{itemize}
+% 		\item Use single layer or ResNet example
+% 		\item Change objective function to accept index set $S_k$
+% 		\item Use small minibatch
+% 		\item Test using peaks example
+% 	\end{itemize}
+% \end{frame}
 
-\begin{frame}
-	\frametitle{A Practical Approach}
-	
-	Let's combine VarPro and SAA to come up with a simple yet powerful training algorithm.
-	
-	\bigskip
-	\pause
-	
-	Pick $(\bftheta_0)$ randomly and then do one or more steps of:
-	\begin{enumerate}
-		\item randomly select samples $S$ (large enough)
-		\item do a few steps of variable projection to get $\bftheta_k$.
-		\begin{itemize}
-			\item inner solver: a few steps of Newton's method
-		\end{itemize}
-		\item check training error on current batch and validation error
-	\end{enumerate}
-	
-	\bigskip
-	\pause
-	
-	Possible problems:
-	\begin{itemize}
-		\item $|S|$ too small $\rightarrow$ training error small but no convergence
-		\item $|S|$ too large $\rightarrow$ slow, overfitting (use regularization)
-		\item Too few Newton steps in classification $\rightarrow$ inaccurate gradients, line search fails, \ldots
-	\end{itemize}	
-\end{frame}
+\section{Practical Hints}
 
-\begin{frame}[fragile]\frametitle{Data Preprocessing}
+\begin{frame}[fragile]\frametitle{Practical Hint: Data Preprocessing}
 
 Some practical tips
 \begin{itemize}
@@ -828,31 +840,75 @@ Obtain sparse matrices $\bfK$ that retain only necessary entries
 
 
 
-\begin{frame}[fragile]\frametitle{Coding: Learning the weights }
+% \begin{frame}[fragile]\frametitle{Coding: Learning the weights }
+%
+% {\bf Class problem}
+%
+% \bigskip
+%
+% Modify your steepest descent, nonlinear CG and SGD codes to work on single layer
+% network with soft thresholding.
+%
+% Test on Circle, peaks, spiral, MNIST and CIFAR10
+%
+% Compare and report
+%
+% \end{frame}
 
-{\bf Class problem}
+\section{Experiments}
 
-\bigskip
-
-Modify your steepest descent, nonlinear CG and SGD codes to work on single layer
-network with soft thresholding.
-
-Test on Circle, peaks, spiral, MNIST and CIFAR10
-
-Compare and report
-
-\end{frame}
-\begin{frame}\frametitle{Experiment: Peaks}
+\begin{frame}[fragile]
+	\frametitle{Test Problems}
 	
-	Compare the three approaches for training a single layer neural network
+	Before going to real data, let us try the \emph{inverse crime}. Generate data
+	\begin{verbatim}
+		n  = 500; nf = 50; nc = 10; m  = 40;
+		Wtrue = randn(nc,m);
+		Ktrue = randn(m,nf);
+		btrue = .1;
+
+		Y     = randn(nf,n);
+		Cobs  = exp(Wtrue*singleLayer(Ktrue,btrue,Y));
+		Cobs  = Cobs./sum(Cobs,1);		
+	\end{verbatim}
+	
+	\begin{center}
+	Goal: Reconstruct \texttt{Wtrue, Ktrue, btrue}!  
+	\end{center}
+	
+	\bigskip
+	
+	Other cheap test problems: \texttt{PeaksClassification, PeaksRegression, CircleClassification}.
+\end{frame}
+
+% \begin{frame}\frametitle{Experiment: Peaks}
+%
+% 	Compare the three approaches for training a single layer neural network
+%
+% 	\begin{itemize}
+% 		\item \texttt{ESingleLayer\_PeaksSGD.m} - stochastic gradient descent
+% 		\item \texttt{ESingleLayer\_PeaksNewtonCG.m} - Newton CG with block-diagonal Hessian approximation
+% 		\item \texttt{ESingleLayer\_PeaksVarPro.m} - Fully coupled solver. Eliminate $\bftheta$ and use steepest descent/Newton CG for reduced problem.
+% 	\end{itemize}
+%
+% \end{frame}
+
+\section{Summary}
+\begin{frame}
+	\frametitle{$\Sigma$ : Single-Layer Neural Networks }
+	$$ \min_{\bfK,\bfW,\bfb} E(\bfW\sigma(\bfK \bfY + \bfb\bfe_n^\top), \bfC_{\rm obs}) + \lambda R(\bfW,\bfK,\bfb)$$
 	
 	\begin{itemize}
-		\item \texttt{ESingleLayer\_PeaksSGD.m} - stochastic gradient descent 
-		\item \texttt{ESingleLayer\_PeaksNewtonCG.m} - Newton CG with block-diagonal Hessian approximation
-		\item \texttt{ESingleLayer\_PeaksVarPro.m} - Fully coupled solver. Eliminate $\bftheta$ and use steepest descent/Newton CG for reduced problem.
+		\item transform data, increase dimension $\leadsto$ approximation power
+		\item Extreme Learning Machines: random nonlinear feature extractor
+		\item More common to train $\bfK, \bfb, \bfW$
+		\item Training problem is non-convex and stochastic
+		\item SAA methods: Pick large sample and use deterministic tools (easy to parallelize, fast convergence if done right, but can be trapped in local minima)
+		\item SA methods: small sample and random steps (easy to code, difficult to parallelize, need to choose hyper parameter)
 	\end{itemize}
-	
 \end{frame}
+
+
 
 \begin{frame}[allowframebreaks]
 	\frametitle{References}
@@ -861,5 +917,5 @@ Compare and report
 
 \end{frame}
 
-
+\end{document}
 

@@ -1,9 +1,9 @@
-\documentclass[12pt,fleqn,beamer]{beamer}
+\documentclass[12pt,fleqn,handout]{beamer}
 
 \input{beamerStyle.tex}
 \input{abbrv.tex}
 
-\title{Linear Models}
+\title{Linear Least-Squares}
 \subtitle{Numerical Methods for Deep Learning}
 \date{}
 
@@ -16,8 +16,34 @@
 \section{Least-Squares Regression} 
 \label{sec:least_squares_regression}
 
+\begin{frame}
+	\frametitle{Learning Objective: Linear Least-Squares}
+	
+	In this module we review computational methods for linear least-squares problems, which play a role in almost any learning tasks (including deep learning).
+	
+	\bigskip
+	
+	Learning tasks:
+	\begin{itemize}
+		\item image classification (supervised)
+		\item image inpainting (semi-supervised) 
+		\item \ldots
+	\end{itemize}
+	
+	\bigskip
+	
+	Numerical methods:
+	\begin{itemize}
+		\item singular value decomposition
+		\item steepest descent
+		\item conjugate gradient method
+	\end{itemize}
+\end{frame}
 
-\begin{frame}\frametitle{Supervised Learning Problem}
+\subsection{Introduction} % (fold)
+\label{sub:introduction}
+
+\begin{frame}\frametitle{Reminder: Supervised Learning Problem}
 
 Given examples (inputs)
 $$ \bfY = \left[\bfy_1,  \bfy_2 , \cdots, \bfy_n \right] \in\R^{n_f\times n}$$
@@ -78,6 +104,36 @@ $$ \min_{\bfW} \hf \|\bfW \bfY - \bfC\|^2_F $$
 		
 \end{frame} 
 
+\begin{frame}
+	\frametitle{Detour: Image Inpainting (Semi-Supervised)}
+	
+	Image inpainting: Estimate an image function $f : [0,1]^2 \to \R$ from partial observations.
+	
+	First: Discretize the image on a grid with $n = n_x \cdot n_y$ pixels. We obtain $\bff \in \R^n$. 
+	
+	\bigskip
+	\pause
+	
+	The input data is given by $\bfc \in \R^{k}$ with $k<n$ where 
+	\begin{equation*}
+		\bfd_i = f(\bfx_i) + \bfepsilon_i, \quad i=1,\ldots,k,
+	\end{equation*}
+	where $\bfx_i$ are points in $[0,1]^2$, and $\bfepsilon \sim \mathcal{N}(0,\sigma\bfI)$.
+	
+	\bigskip
+	
+	Write the inpainting problem as a linear least-squares problem
+	\begin{equation*}
+		\min_{\bff} \frac{1}{2\sigma} \| \bfA \bff - \bfc \|^2.
+	\end{equation*} 
+	Question: What is $\bfA$? How good will this approach be?
+	
+	
+\end{frame}
+
+% subsection introduction (end)
+
+
 \begin{frame}\frametitle{Optimality Conditions for Least-Squares}
 
 To minimize a function need to differentiate and equate to $0$
@@ -115,30 +171,31 @@ Here, $\bfA^\top \bfA \in \R^{n_f \times n_f}$ must be invertible, i.e.,
 
 \end{frame}
 
-
-\section{Coding} % (fold)
-\label{sec:coding}
+% section coding (end)
 \begin{frame}
-	\frametitle{Coding: Least-Squares Regression}
+	\frametitle{Coding: Least-Squares for Classification}
 	
 	\begin{enumerate}
 		\item Write a code for solving
 		$$
 		\min_{\bfW,\bfb} \hf\| \bfW\bfY + \bfb \bfe_n^\top - \bfC \|^2
 		$$
-		and apply it to some of our test data (MNIST / CIFAR10)
+		and apply it to the MNIST test data from
+		\begin{center}
+			\texttt{http://yann.lecun.com/exdb/mnist/}
+		\end{center}
 		
 		\item Solve the problem using the normal equations derived above.
 		
 		\item Use optimal weights to predict labels for test data. How well does your solution generalize?
+		
+		\item Visualize the rows of $\bfW$ as images.
 		
 	\end{enumerate}
 	
 	\bigskip
 	
 \end{frame}
-% section coding (end)
-
 \section{Regularization} 
 \label{sec:bias_variance}
 
@@ -157,9 +214,11 @@ $$ \bfSigma = \begin{pmatrix} \sigma_1  &  &  \\ &  \ddots &  \\ &  &  \sigma_{n
 
 \end{frame}
 
+
+
 \begin{frame}\frametitle{Ill-posedness and Regularization}
 
-Important is the \emph{effective rank}: If $\sigma_j \ll \sigma_1$ for all
+Important is the \emph{effective rank}: If $\sigma_j \ll \sigma_k$ for all
 $j\geq k$, then the effective rank of the problem is $k$.
 
 \bigskip
@@ -167,12 +226,12 @@ $j\geq k$, then the effective rank of the problem is $k$.
 If $k < n_f$, the least squares problem is ill-posed, i.e., solution does not exist or is unstable.
 
 Small perturbations
-in $\bfC$ or $\bfA=\bfY^\top$ yield large perturbations in $\bfX = \bfW^\top$
+in $\bfC$ or $\bfA$ yield large perturbations in $\bfX$
 
 \bigskip
 
-Solve regularized problem: For $\lambda>0$
-$$ \min_\bfX \hf \|\bfA\bfX - \bfC^\top\|_F^2 + {\frac {\lambda}2} \|\bfX\|_F^2 $$
+Solve regularized problem: For some $\lambda>0$ and matrix $\bfG$
+$$ \min_\bfX \hf \|\bfA\bfX - \bfC^\top\|_F^2 + {\frac {\lambda}2} \|\bfG \bfX\|_F^2 $$
 
 {
 {\em Exercise: solve the regularized least-squares problem}
@@ -180,28 +239,28 @@ $$ \min_\bfX \hf \|\bfA\bfX - \bfC^\top\|_F^2 + {\frac {\lambda}2} \|\bfX\|_F^2 
 \pause
 
 
-$$ \bfX = (\bfA^{\top} \bfA + \lambda \bfI)^{-1} \bfA^{\top} \bfC^\top $$
+$$ \bfX = (\bfA^{\top} \bfA + \lambda \bfG^\top\bfG)^{-1} \bfA^{\top} \bfC^\top $$
 \end{frame}
 
 \begin{frame}\frametitle{The Bias-Variance Decomposition}
 
-Assume $\bfC^\top = \bfA \bfX_{\rm true}  + \epsilon$, $\epsilon \sim\mathcal{N}(0,\sigma \bfI)$,  $\lambda>0$ fixed.
+Assume $\bfC^\top = \bfA \bfX_{\rm true}  + \bfepsilon$, $\bfepsilon \sim\mathcal{N}(0,\sigma \bfI)$,  $\lambda>0$ fixed, $\bfG=\bfI$.
 
 Then setting  $\bfA^{\dag}_{\lambda} = (\bfA^{\top} \bfA + \lambda \bfI)^{-1}$
 \begin{align*}
 	\bfX - \bfX_{\rm true} & = \bfA^{\dag}_{\lambda} \bfA^{\top} \bfC^\top - \bfX_{\rm true} \\
 	                      & = \left(\bfA^{\dag}_{\lambda} \bfA^{\top} \bfA - \bfI \right)  \bfX_{\rm true} +
-	\bfA^{\dag}_{\lambda} \bfA^{\top} \epsilon \\
+	\bfA^{\dag}_{\lambda} \bfA^{\top} \bfepsilon \\
 	                     & = -\lambda \bfA^{\dag}_{\lambda}\bfX_{\rm true}+
-	\bfA^{\dag}_{\lambda} \bfA^{\top} \epsilon
+	\bfA^{\dag}_{\lambda} \bfA^{\top} \bfepsilon
 \end{align*}
 
 \pause
 
-Error depends on $\epsilon$ $\leadsto$ take expectation
+Error depends on $\bfepsilon$ $\leadsto$ take expectation
 \begin{align*}
  {\mathbb E} \|\bfX - \bfX_{\rm true}\|_F^2 &= {\mathbb E}
-\|\bfA^{\dag}_{\lambda} \bfA^{\top} \epsilon -\lambda \bfA^{\dag}_{\lambda}\bfX_{\rm true} \|_F^2   \\
+\|\bfA^{\dag}_{\lambda} \bfA^{\top} \bfepsilon -\lambda \bfA^{\dag}_{\lambda}\bfX_{\rm true} \|_F^2   \\
 &=\overbrace{ \lambda^2 \|\bfA^{\dag}_{\lambda}\bfX_{\rm true}\|_F^2}^{\rm \|bias\|_F^2} +
 \overbrace{\sigma^2 {\rm trace}\left( \bfA \bfA^{\dag^T}_{\lambda} \bfA^{\dag}_{\lambda} \bfA^{\top} \right)}^{\rm variance}
 \end{align*}
@@ -215,26 +274,26 @@ Error depends on $\epsilon$ $\leadsto$ take expectation
 \end{frame}
 
 
-\begin{frame}\frametitle{Next Time}
-
-Solving large-scale least-squares problems.
-
-
-\bigskip
-
-Watch: \tt{https://www.youtube.com/watch?v=eAYohMUpPMA}
-\begin{center}
-	\includegraphics[width=.8\textwidth]{youtubeCG}
-\end{center}
-
-
-\end{frame}
+% \begin{frame}\frametitle{Next Time}
+%
+% Solving large-scale least-squares problems.
+%
+%
+% \bigskip
+%
+% Watch: \tt{https://www.youtube.com/watch?v=eAYohMUpPMA}
+% \begin{center}
+% 	\includegraphics[width=.8\textwidth]{youtubeCG}
+% \end{center}
+%
+%
+% \end{frame}
 
 
 \section{Iterative Methods} % (fold)
 \label{sec:iterative_methods}
 \begin{frame}\frametitle{Iterative Solvers for Least-Squares Regression}
-	Last time: Given $\bfY\in \R^{n_f\times n}$ and $\bfC\in\R^{n_c\times n}$, solve
+	So far: Given $\bfY\in \R^{n_f\times n}$ and $\bfC\in\R^{n_c\times n}$, solve
 	$$
 	\min_{\bfX}  \frac12\left\|  \bfA   \bfX  -  \bfC^\top \right\|_F^2
 	$$
@@ -245,13 +304,14 @@ Watch: \tt{https://www.youtube.com/watch?v=eAYohMUpPMA}
 		\end{pmatrix}, \quad \text{ and } \quad 
 		\bfX = \bfW^\top \in \R^{(n_f+1)\times n_c}.
 	$$
-	Problems: Generating  $\bfA^{\top}\bfA$ and solving normal equations is too costly for large-scale problems.
+	Problems:
+	\begin{enumerate}
+		\item Generating  $\bfA^{\top}\bfA$ and solving normal equations is too costly for large-scale problems.
+		\item Exact solution not useful when problem is ill-posed $\leadsto$ add explicit regularization or do so implicitly by early stopping.
+	\end{enumerate} 
 	
 	\pause
-
-	\bigskip
-	
-Today: Iterative methods that avoid working with $\bfA^{\top}\bfA$ 
+Iterative methods that avoid working with $\bfA^{\top}\bfA$ 
 \begin{itemize}
 \item Steepest descent 
 \item Conjugate gradient for least-squares (CGLS)
@@ -339,7 +399,7 @@ $$
 $$
 
 Here, $\kappa$ depends on condition number of $\bfA$, i.e., 
-$$ \kappa \approx {\frac {\sigma_{\bf min}^2}{\sigma_{\bf max}^2}} $$
+$$ \kappa \approx {\frac {\sigma_{\bf max}^2}{\sigma_{\bf min}^2}} $$
 
 
 Can be painfully slow for ill-conditioned problems
@@ -360,7 +420,7 @@ Can be painfully slow for ill-conditioned problems
 	Solve in two steps:
 	\begin{enumerate}
 		\item Set $\bfz = \bfS^{-1}\bfx$ and compute
-	 $$ \bfz^* \argmin_{\bfz} \hf \|\bfA \bfS \bfz - \bfc \|^2$$
+	 $$ \bfz^*  = \argmin_{\bfz} \hf \|\bfA \bfS \bfz - \bfc \|^2$$
 	 	\item Then $\bfx = \bfS \bfz$.
 	\end{enumerate} 
 
@@ -395,12 +455,12 @@ $$
  \bfY = \begin{pmatrix}  1 & 1+a \\ 1 & 1+2a \\ 1 & 1+3a
 	\end{pmatrix} 
 	\quad  \text{ and } \quad
-	 \bfw_{\rm true} = \begin{pmatrix} 1\\ 1.2 \end{pmatrix}.
+	 \bfx_{\rm true} = \begin{pmatrix} 1\\ 1.2 \end{pmatrix}.
 $$
 
 \bigskip
 
-Plot errors $\|\bfx_j - \bfx^*\|$ for $j=1,\dots$ and $a \in \{1, 10^{-2}, 10^{-5}\}$.
+Plot errors $\|\bfx_j - \bfx_{\rm true}\|$ for $j=1,\dots$ and $a \in \{1, 10^{-2}, 10^{-5}\}$.
 
 \end{frame}
 
@@ -435,21 +495,22 @@ Facts:
 \begin{frame}[fragile]
 	\frametitle{CGLS: Conjugate Gradient Least-Squares}
 \begin{verbatim}
-     function x = cgls(A,c,k)
-     n = size(A,2);
-     x = zeros(n,1);
-     d = A'*c;   r = c;
-     normr2 = d'*d;
-     for j=1:k
-         Ad = A*d; alpha = normr2/(Ad'*Ad);
-         x  = x + alpha*d;
-         r  = r - alpha*Ad;
-         d  = A'*r;
-         normr2New = d'*d;
-         beta = normr2New/normr2;
-         normr2 = normr2New;
-         d = d + beta*d;
-     end
+function x = mycgls(A,c,k,tol)
+n = size(A,2);
+x = zeros(n,1);
+d = A'*c;   r = c;
+normr2 = d'*d;
+for j=1:k
+    Ad = A*d; alpha = normr2/(Ad'*Ad); 
+    x =x+alpha*d;
+    r = r - alpha*Ad;
+    s = A'*r;
+    normr2New = d'*d;
+    if normr2New<tol;return; end
+    beta = normr2New/normr2;
+    normr2 = normr2New;
+    d = s + beta*d;
+end
 \end{verbatim}
 
 
@@ -569,7 +630,7 @@ When the solution depends on some hyper-parameter(s) $\lambda$, we can phrase th
 \begin{equation*}
  \lambda^* = \argmin_{\lambda} \|\bfA_{\rm CV} \bfx(\lambda) - \bfc_{\rm CV}\|^2,
 \end{equation*}
-where  $\bfx(\lambda) = \argmin_\bfx \|\bfA \bfx - \bfx \|^2 + \lambda \|\bfx\|^2$.
+where  $\bfx(\lambda) = \argmin_\bfx \hf\|\bfA \bfx - \bfx \|^2 + \frac{\lambda}{2} \|\bfx\|^2$.
 
 \end{frame}
 
@@ -598,27 +659,42 @@ Procedure
 
 \end{frame}
 
+%
+% \section{Coding} % (fold)
+% \label{sec:coding}
 
 
+% \begin{frame}[fragile]
+% 	\frametitle{Project: Iterative Methods for Regression}
+%
+% 	For the MNIST dataset (CIFAR-10 optional)
+% 	\begin{itemize}
+% 		\item solve the problem with
+% 		\item write a steepest descent for least-squares problems
+% 		\begin{verbatim}
+% 			function x = sdLeastSquares(A,c,x0,maxIter)
+% 		\end{verbatim}
+% 		\item write a conjugate gradient code
+% 		\begin{verbatim}
+% 			function x = cgLeastSquares(A,c,maxIter)
+% 		\end{verbatim}
+% 	\end{itemize}
+% \end{frame}
 
-\begin{frame}[fragile]
-	\frametitle{Coding: Iterative Methods for Regression}
-	
-	Outline:
+\begin{frame}
+	\frametitle{$\Sigma$ : Linear Least-Squares}
+		\begin{equation*}
+			 \min_{\bfW} \hf \|\bfW \bfY - \bfC\|^2_F \quad \leadsto \quad\min_{\bfx} \hf \|\bfA \bfx - \bfb\|^2_F
+		\end{equation*}
 	\begin{itemize}
-		\item Dataset: MNIST / CIFAR 10
-		\item write a steepest descent for least-squares problems
-		\begin{verbatim}
-			function x = sdLeastSquares(A,c,x0,maxIter)
-		\end{verbatim}
-		\item write a conjugate gradient code
-		\begin{verbatim}
-			function x = cgLeastSquares(A,c,maxIter)
-		\end{verbatim}
+		\item optimality conditions: normal equations
+		\item typically requires regularization
+		\item direct: Tikhonov weight decay $\leadsto$ need to choose $\lambda$
+		\item iterative: steepest descent, CG $\leadsto$ need to choose maximum number of iterations.
+		\item classification: how to interpret output $\bfW \bfY$ (not a probability!)
+		\item image inpainting: effective choice of regularizer and parameter.
 	\end{itemize}
 \end{frame}
-
-
 
 \begin{frame}[allowframebreaks]
 	\frametitle{References}

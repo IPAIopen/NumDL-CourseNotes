@@ -4,7 +4,7 @@
 \input{abbrv.tex}
 
 
-\title[Reg Image Class]{Regularization for Image Classification}
+\title{Convolutional Neural Networks}
 \subtitle{Numerical Methods for Deep Learning}
 \date{}
 \begin{document}
@@ -40,6 +40,30 @@ Possible remedies:
 	\item \textbf{Regularization:} penalize $\bfK$ 
 	\item \textbf{Parametric model:} $\bfK(\bftheta)$ where $\bftheta\in\R^p$ with $p\ll m\cdot n_f$.
 \end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Learning Objective: Convolutional Neural Networks}
+	
+	In this module we discuss parametric models, particularly CNNs.
+	
+	\bigskip
+	
+	Learning tasks:
+	\begin{itemize}
+		\item image classification
+		\item image segmentation
+		\item PDE solvers(?)
+	\end{itemize}
+	
+	\bigskip
+	
+	Numerical methods:
+	\begin{itemize}
+		\item structured matrix computation
+		\item PDE-based regularizers
+		\item parallel computing (GPUs,\ldots)
+	\end{itemize}
 \end{frame}
 
 
@@ -92,7 +116,7 @@ Possible remedies:
 	
 	Note that all previous models are linear in the following sense
 	$$
-		\bfK(\bftheta) = {\rm mat}(\bfQ\, \bftheta)
+		\bfK(\bftheta) = {\rm mat}(\bfQ\, \bftheta).
 	$$
 	
 	\bigskip
@@ -139,6 +163,9 @@ Possible remedies:
 	\end{center}
 \end{frame}
 
+
+\section{Convolutional Neural Networks} % (fold)
+\label{sec:convolutional_neural_networks}
 \begin{frame}\frametitle{Convolutional Neural Networks~\cite{LeCun1990}}
 	\begin{center}
 		\begin{tikzpicture}
@@ -155,7 +182,7 @@ Possible remedies:
 		\item useful for speech, images, videos, \ldots
 		\item efficient parameterization, efficient codes (GPUs, \ldots)
 		\item later: CNNs as parametric model and PDEs, simple code
-		\item see \texttt{E13Conv2D.m}
+		% \item see \texttt{E13Conv2D.m}
 	\end{itemize}
 
 \end{frame}
@@ -309,94 +336,94 @@ Possible remedies:
 	$$ 	
 \end{frame}
 
-\begin{frame}\frametitle{Coding: 1D Convolution using FFTs}
-	Let $\bftheta \in \R^3$ be some stencil and $n_f = m = 16$ 
-\begin{enumerate}
-	\item build a sparse matrix $\bfK$ for computing the convolution with periodic boundary conditions. 
-	Hint: \texttt{spdiags}
-	
-	\item compute the eigenvalues of $\bfK$ using \texttt{eig(full(K))} and using $\texttt{fft}$ and first column of $\bfK$. Compare!
-	
-	\item verify that \texttt{norm(K*y - real(ifft(lam.*fft(y))))} is small.
-	
-	\item repeat previous item for transpose.
-	
-	\item write code that computes eigenvalues for arbitrary stencil size without building $\bfK$. Hint: \texttt{circshift}
-\end{enumerate}
-\end{frame}
+% \begin{frame}\frametitle{Coding: 1D Convolution using FFTs}
+% 	Let $\bftheta \in \R^3$ be some stencil and $n_f = m = 16$
+% \begin{enumerate}
+% 	\item build a sparse matrix $\bfK$ for computing the convolution with periodic boundary conditions.
+% 	Hint: \texttt{spdiags}
+%
+% 	\item compute the eigenvalues of $\bfK$ using \texttt{eig(full(K))} and using $\texttt{fft}$ and first column of $\bfK$. Compare!
+%
+% 	\item verify that \texttt{norm(K*y - real(ifft(lam.*fft(y))))} is small.
+%
+% 	\item repeat previous item for transpose.
+%
+% 	\item write code that computes eigenvalues for arbitrary stencil size without building $\bfK$. Hint: \texttt{circshift}
+% \end{enumerate}
+% \end{frame}
 
-\begin{frame}\frametitle{Derivatives of 1D Convolution - 1}
-	Recall that we need a way to compute
-	$$
-		\bfJ_\bftheta (\bfK(\bftheta)\bfY) \bfv \quad \text{ and } \quad \bfJ_\bftheta (\bfK(\bftheta)\bfY)^\top \bfw, \quad (\bfJ_\bftheta \in\R^{m \times p})
-	$$
-	(note that we put $\bfY$ inside the bracket to avoid tensors)
+% \begin{frame}\frametitle{Derivatives of 1D Convolution - 1}
+% 	Recall that we need a way to compute
+% 	$$
+% 		\bfJ_\bftheta (\bfK(\bftheta)\bfY) \bfv \quad \text{ and } \quad \bfJ_\bftheta (\bfK(\bftheta)\bfY)^\top \bfw, \quad (\bfJ_\bftheta \in\R^{m \times p})
+% 	$$
+% 	(note that we put $\bfY$ inside the bracket to avoid tensors)
+%
+% 	\bigskip
+% 	\pause
+%
+% 	Assume single example, $\bfy$. Since we have periodic boundary conditions
+% 	\begin{equation*}
+% 		\begin{split}
+% 	   \bfK(\bftheta)\bfy & =  {\rm real}(\bfF^*( \bflambda(\bftheta) \odot \bfF \bfy)) \\
+% 	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bflambda(\bftheta)), \quad 		\bflambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
+% 		\end{split}
+% 	\end{equation*}
+% 	\pause
+%
+% 	Need to differentiate eigenvalues w.r.t. $\bftheta$. Note linearity
+% 	$$
+% 		\bfK(\bftheta) \bfu_1 = \bfQ \bftheta, \quad \bfQ = ?
+% 	$$
+%
+% \end{frame}
+%
+% \begin{frame} \frametitle{Derivatives of 1D Convolution - 2}
+% 	Assume we have
+% 	$$
+% 		\bfK(\bftheta) \bfy  = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bfF \bfQ \bftheta))
+% 	$$
+% 	Then mat-vecs with Jacobian are easy to compute
+% 	$$
+% 		\bfJ_\bftheta ( \bfK(\bftheta) \bfy) \bfv = {\rm real}( \bfF^* ({\rm diag}(\bfF \bfy)  \bfF \bfQ \bfv))
+% 	$$
+% 	\pause
+% 	and (note that $\bfF^\top = \bfF$ and $(\bfF^*)^\top = \bfF^*$)
+% 	$$
+% 		\bfJ_\bftheta (\bfK(\bftheta) \bfy)^\top \bfw = {\rm real}(\bfQ^\top \bfF  {\rm diag}(\bfF \bfy)\bfF^* \bfw)
+% 	$$
+%
+% 	\bigskip
+% 	\pause
+%
+% 	\begin{center}
+% 		\textcolor{red}{Code this and check Jacobian and its transpose using \texttt{conv1D.m}!}
+% 	\end{center}
+%
+% \end{frame}
 
-	\bigskip
-	\pause
-	
-	Assume single example, $\bfy$. Since we have periodic boundary conditions
-	\begin{equation*}
-		\begin{split}
-	   \bfK(\bftheta)\bfy & =  {\rm real}(\bfF^*( \bflambda(\bftheta) \odot \bfF \bfy)) \\
-	                     & = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bflambda(\bftheta)), \quad 		\bflambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
-		\end{split}
-	\end{equation*}
-	\pause
-	
-	Need to differentiate eigenvalues w.r.t. $\bftheta$. Note linearity
-	$$
-		\bfK(\bftheta) \bfu_1 = \bfQ \bftheta, \quad \bfQ = ?
-	$$
-	
-\end{frame}
+% \begin{frame}
+% 	\frametitle{Extension 1: Many Examples}
+%
+% 	Let $n>1$. In MATLAB must avoid for-loop over examples.
+% 	$$
+% 		\bfK(\bftheta)\bfY =  {\rm real}(\bfF^* {\rm diag}(\lambda(\bftheta)) \bfF \bfY)
+% 	$$
+% 	$$
+% 		 \bfK(\bftheta)^\top\bfZ =  {\rm real}(\bfF {\rm diag}(\lambda(\bftheta)) \bfF^* \bfZ)
+% 	$$
+% 	These require almost no change to the code. For the Jacobians, we need to re-order slightly and get
+% 	$$
+% 		\bfJ_\bftheta (\bfK(\bftheta)\bfY) = {\rm real}(\bfF^* {\rm diag}(\bfF \bfQ v) \bfF \bfY)
+% 	$$
+% 	and for the transpose we need to sum over examples
+% 	$$
+% 		\bfJ_\bftheta(\bfK(\bftheta)\bfY)^\top\bfW = {\rm real}(\bfQ^\top \bfF  ((\bfF\bfY) \odot (\bfF^* \bfW) \bfe_n))
+% 	$$
+%
+% \end{frame}
 
-\begin{frame} \frametitle{Derivatives of 1D Convolution - 2}
-	Assume we have
-	$$
-		\bfK(\bftheta) \bfy  = {\rm real}( \bfF^* \ {\rm diag}(\bfF \bfy) \ \bfF \bfQ \bftheta))
-	$$
-	Then mat-vecs with Jacobian are easy to compute
-	$$
-		\bfJ_\bftheta ( \bfK(\bftheta) \bfy) \bfv = {\rm real}( \bfF^* ({\rm diag}(\bfF \bfy)  \bfF \bfQ \bfv))
-	$$
-	\pause
-	and (note that $\bfF^\top = \bfF$ and $(\bfF^*)^\top = \bfF^*$)
-	$$
-		\bfJ_\bftheta (\bfK(\bftheta) \bfy)^\top \bfw = {\rm real}(\bfQ^\top \bfF  {\rm diag}(\bfF \bfy)\bfF^* \bfw)
-	$$
-	
-	\bigskip
-	\pause
-	
-	\begin{center}
-		\textcolor{red}{Code this and check Jacobian and its transpose using \texttt{conv1D.m}!}
-	\end{center}
-	
-\end{frame}
-
-\begin{frame}
-	\frametitle{Extension 1: Many Examples}
-	
-	Let $n>1$. In MATLAB must avoid for-loop over examples. 
-	$$
-		\bfK(\bftheta)\bfY =  {\rm real}(\bfF^* {\rm diag}(\lambda(\bftheta)) \bfF \bfY)
-	$$
-	$$
-		 \bfK(\bftheta)^\top\bfZ =  {\rm real}(\bfF {\rm diag}(\lambda(\bftheta)) \bfF^* \bfZ)
-	$$
-	These require almost no change to the code. For the Jacobians, we need to re-order slightly and get
-	$$
-		\bfJ_\bftheta (\bfK(\bftheta)\bfY) = {\rm real}(\bfF^* {\rm diag}(\bfF \bfQ v) \bfF \bfY)
-	$$
-	and for the transpose we need to sum over examples
-	$$
-		\bfJ_\bftheta(\bfK(\bftheta)\bfY)^\top\bfW = {\rm real}(\bfQ^\top \bfF  ((\bfF\bfY) \odot (\bfF^* \bfW) \bfe_n))
-	$$
-	
-\end{frame}
-
-\begin{frame}\frametitle{Extension 2: 2D Convolution}
+\begin{frame}\frametitle{Extension: 2D Convolution}
 	Example: Let $\bfy,\bfz,\bftheta \in \R^{3\times 3}$ and assume periodic BCs then
 	\begin{align*}
 			\bfz_{21}   & = \bftheta_{33} \bfy_{13} + \bftheta_{32} \bfy_{11}+ \bftheta_{31} \bfy_{12} \\
@@ -453,7 +480,7 @@ Possible remedies:
 
 
 
-\begin{frame}\frametitle{Extension 2: 2D Convolution using FFTs}	
+\begin{frame}\frametitle{2D Convolution using FFTs}	
 	Since the 2D convolution operator is BCCB, we still have that
 	\begin{equation*}
 		\bfK(\bftheta) = \bfF^* {\rm diag}(\lambda(\bftheta)) \bfF, \quad \lambda(\bftheta) = \bfF(\bfK(\bftheta)\bfu_1).
@@ -468,9 +495,11 @@ Possible remedies:
 	All else stays the same and extends also to higher dimensions (like for videos).
 	
 	For more details on convolutions and structured matrices see~\cite{HansenNagyOLeary2006}. For FFT-based implementations of CNNs see~\cite{Mathieu:2013wa,Vasilache:2014wh}.
+	
+	Note that FFTs enable also to compute $\bfK(\bftheta)^{-1} \bfY$ efficiently.
 \end{frame}
 
-\begin{frame}\frametitle{Extension 3: Width of CNNs}
+\begin{frame}\frametitle{The Width of a CNN}
 	
 	\begin{center}
 		\begin{tabular}{ccc}
@@ -515,18 +544,18 @@ Possible remedies:
 	
 \end{frame}
 
-\begin{frame}\frametitle{Outlook: Possible Extensions}
+\begin{frame}\frametitle{Other Operators for Imaging Tasks}
 	For now, we just introduced the very basic convolution layer. 
 	
 	CNNs used in practice also use the following components 
 	\begin{itemize}
-		\item \emph{pooling:} reduce image resolution (e.g.  average over patches)
+		\item \emph{pooling:} reduce image resolution (e.g.  maximum or average over patches)
 		\item \emph{stride:} Example: stride of two reduces image resolution by computing $\bfz$ only at every other pixel. 
 	\end{itemize}
 	
 	\bigskip
 	
-	Build your own parametric model (ideas for projects)
+	Build your own parametric model
 	\begin{itemize}
 		\item $M-$matrix for convolution
 		\item cheaper convolution models: separable kernels, doubly symmetric kernels
@@ -539,22 +568,23 @@ Possible remedies:
 \section{Regularization in Imaging} % (fold)
 \label{sec:regularization_in_imaging}
 
-\begin{frame}[fragile]\frametitle{Why use regularization?}
-We are attempting to train weights $\bfW \in \R^{n_c \times n_f}$ to express the relation between some data $\bfY \in \R^{n_f \times n}$ and their labels $\bfC \in \R^{n_c \times n}$ by solving
+\begin{frame}[fragile]\frametitle{Regularizers for Image Classification}
+	Focus on last layer: Goal is to train weights $\bfW \in \R^{n_c \times m}$ to express the relation between  $\bfZ = \sigma(\bfK \bfY + \bfb \bfe_n^\top)$ and labels $\bfC \in \R^{n_c \times n}$ by solving
 $$
-	 \min_\bfW  E(\bfW) =  E(\bfC,\bfW,\bfY)
+	 \min_\bfW  E(\bfW) =  E(\bfC,\bfW,\bfZ)
 $$ 
-Recall: ${\rm rank}(\bfY) \leq \min\{n_f,n\}$
+Recall: ${\rm rank}\bfZ \leq \min\{m,n\}$
 \begin{itemize}
-\item $n < n_f$: No unique solution
-\item $n > n_f$: $\bfY$ may still be rank-deficient
+\item $n < m$: No unique solution
+\item $n > m$: $\bfZ$ may still be rank-deficient/ ill-posed
 \end{itemize}
 
 \pause
 
-Challenges in image classification: 
+Opportunities/challenges in image classification: 
 \begin{itemize}
-	\item data is high dimensional ($n_f \approx$ number of pixels/voxels/frames)
+	\item when using convolutions, $\bfZ$ looks like filtered images
+	\item data is high dimensional ($m \approx$ number of pixels/voxels/frames)
 	\item higher resolution $\leadsto$ need more examples? 
 	\item higher resolution $\leadsto$ larger rank?
 \end{itemize}
@@ -566,12 +596,12 @@ Challenges in image classification:
 If Hessian $\nabla^2 E$ highly ill-conditioned, regularization is needed.
 \begin{itemize}
 \item Symptom: weights are large or oscillatory.
-\item Alternative: Estimate condition number (costly!)
+\item Alternative: Estimate condition number (costly!), early stopping
 \end{itemize}
 
 \pause
 
-Solution: require solution to be regular
+Solution: Use regularization to obtain a well-posed problem
 $$ \min_W\ \phi(\bfW) = E(\bfW) + \lambda R(\bfW), $$
 
 where
@@ -612,7 +642,7 @@ Excellent references include~\cite{Hansen1998,Hansen2010, Vogel2002}.
 	\end{itemize} 
 \end{frame}
 
-\begin{frame}[fragile]\frametitle{Type of Regularization}
+\begin{frame}\frametitle{Type of Regularization}
 
 {\bf Classical Tikhonov} (aka weight decay) \\
 $$ R(\bfW) = \hf \|\bfW\|_F^2 $$
@@ -620,7 +650,7 @@ requires elements to be small.
 
 \bigskip
 
-When $\bfY$ are images, also columns in $\bfW$ can be seen as images
+When $\bfZ$ contains images, also columns in $\bfW$ can be seen as images
 $$ \bfw^{\top} \bfy \approx \int_{\Omega} w(\bfxi) y(\bfxi) d\bfxi. $$
 
 {\bf General Tikhonov}: Let $\bfL$ be a given matrix \\
@@ -631,27 +661,27 @@ If $\bfL$ is discrete derivative operator, entries need to be smooth.
 
 \begin{frame}[fragile]\frametitle{Discretization of $\nabla^2$}
 	
-	Idea: Ensure classifier is smooth by using $\bfL \approx \nabla^2$.
+	Idea: Ensure classifier is smooth by using  Laplacian $\bfL \approx \nabla^2$.
 	
 	\bigskip
 	\pause
 
-Finite difference in 1D: 	Let $\bfu \in \R^{m}$ be discretization of $u: [0,1] \to \R$ on regular grid with pixel size $h=1/m$
+Finite difference in 1D: 	Let $\bfu \in \R^{N}$ be discretization of $u: [0,1] \to \R$ on regular grid with pixel size $h=1/N$
 $$ \nabla^2 u(x_j) \approx  {\frac 1 {h^2}} (-2 \bfu_{j} +  \bfu_{j-1} + \bfu_{j+1}). $$
 
 \bigskip
 \pause
 Code in 1D
 \begin{verbatim}
-L1D = @(m,h) 1/h^2 *...
- spdiags(ones(n,1)  * [1  -2  1],-1:1,m,m)
+L1D = @(N,h) 1/h^2 *...
+ spdiags(ones(n,1)  * [1  -2  1],-1:1,N,N)
 \end{verbatim}
 
 
 \bigskip
 \pause
 
-Finite difference in 2D: Let $\bfU \in \R^{m\times m}$ be discretization of $u: [0,1]^2 \to \R$ on regular grid with pixel size $h=1/m$
+Finite difference in 2D: Let $\bfU \in \R^{N\times N}$ be discretization of $u: [0,1]^2 \to \R$ on regular grid with pixel size $h=1/N$
 
 $$ \nabla^2 I(x_{ij}) \approx  {\frac 1 {h^2}} (-4 \bfI_{ij} + \bfI_{i-1j} + \bfI_{i+1j} + \bfI_{ij-1} + \bfI_{ij+1}). $$
 
@@ -697,23 +727,22 @@ Continuous interpretation allows re-computing a convolution kernel for different
 \end{frame}
 % section regularization_in_imaging (end)
 
-\section{Numerical Optimization} % (fold)
+\section{Summary} % (fold)
 \label{sec:numerical_optimization}
-\begin{frame}[fragile]\frametitle{Recap: Numerical Optimization}
+\begin{frame}[fragile]\frametitle{$\Sigma$: Convolutional Neural Networks}
 
-Require derivatives of the regularization to efficiently solve
-$$ \min_{\bfW} \ \phi(\bfW) = E(\bfW) + \lambda R(\bfW) $$
+Idea: Use image structure in forward propagation and classification. 
 
+$$ \min_{\bfW,\bftheta} \ \phi(\bfW) = E(\bfW,\bfZ(\bftheta)) + \lambda R(\bfW,\bftheta),$$
 
-\bigskip
-\pause
+where $\bfZ(\bftheta) = \sigma(\bfK(\bftheta)\bfY+\bfb(\bftheta)) $.
 
-{\bf Tip for Newton-CG:} Use $\nabla^2 R$ as a preconditioner for the conjugate gradient
-solver in the Newton iteration. 
-
-\bigskip
-\pause
-\textbf{Exercise:} Setup smoothness regularizer and test it on MNIST and CIFAR-10
+Discussion:
+\begin{itemize}
+	\item note that convolutions are not the only option to parameterize a neural network layer
+	\item options for convolutions: write own code (full flexibility but slow!), use library (fast, but not flexible), FFT (good trade-off, can compute inverses) 
+	\item regularization: use image structure to enforce smoothness
+\end{itemize}
 \end{frame}
 
 
