@@ -1,0 +1,378 @@
+\documentclass[12pt,fleqn,beamer]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+\date{}
+
+\title[ResNet]{Residual Neural Networks}
+\subtitle{Numerical Methods for Deep Learning}
+
+\begin{document}
+
+\makebeamertitle
+
+\begin{frame}[fragile]\frametitle{Deep Neural Networks in Practice}
+
+\begin{columns}
+\column{.75\textwidth}
+(Some) challenges with deep networks
+\begin{itemize}
+\item
+Computational costs (architecture have millions or billions of parameters)
+\item
+difficult to design
+\item
+difficult to train (exploding/vanishing gradients)
+\item
+unpredictable performance
+\end{itemize}
+
+\bigskip
+\invisible<beamer|1>{
+In 2015, He et al.~\cite{he2016deep,he2016identity} proposed a new architecture that solves many of the problems}
+	
+\column{.25\textwidth}
+\invisible<beamer|1>{
+\includegraphics[width=30mm]{resnet-wikimedia}}
+\end{columns}
+
+
+\only<beamer|2>{}
+\end{frame}
+
+
+
+
+% section motivation (end)
+
+\section{Residual Neural Networks} % (fold)
+\label{sec:residual_neural_networks}
+
+\section{Residual Neural Networks} % (fold)
+\label{sec:residual_neural_networks}
+
+\begin{frame}[fragile]\frametitle{Simplified Residual Neural Network}
+
+Residual Network
+
+\bigskip
+
+\begin{eqnarray*}
+\bfY_1 &=& \bfY_0 + \sigma(\bfK_0\bfY_0 + \bfb_0) \\
+\vdots &=&  \vdots \\
+ \bfY_N &=& \bfY_{N-1} + \sigma( \bfK_{N-1}\bfY_{N-1} + \bfb_{N-1})
+ \end{eqnarray*}
+
+And use $\bfY_N$ to classify. This leads to the optimization problem
+$$ 
+\min_{\bfK_{0,\ldots,N-1},\bfb_{0,\ldots,N-1},\bfW} \ \ E\left(\bfW\bfY_N(\bfK_1,\ldots,\bfK_{N-1},\bfb_1,\ldots, \bfb_{N-1}), \bfC^{\rm obs} \right)
+ $$
+
+\bigskip
+\begin{center}
+	Leads to smoother objective function~\cite{LiEtAl2017}. 
+	\end{center}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Learning Objective: Residual Neural Networks}
+	
+	In this module we consider residual neural networks
+	
+	\bigskip
+	
+	Learning tasks:
+	\begin{itemize}
+		\item regression
+		\item segmentation
+		\item classification
+	\end{itemize}
+	
+	\bigskip
+	
+	Numerical methods:
+	\begin{itemize}
+		\item differential equations
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{Stability of Deep Residual Networks}
+
+Why are ResNets more stable?
+
+A small change
+\begin{eqnarray*}
+\bfY_1 &=& \bfY_0 + h \sigma(\bfK_0 \bfY_0  + \bfb_0) \\
+\vdots &=& \vdots \\
+ \bfY_N &=& \bfY_{N-1} + h\sigma(\bfK_{N-1} \bfY_{N-1} + \bfb_{N-1})
+ \end{eqnarray*}
+
+\bigskip
+\pause 
+
+This is nothing but a forward Euler discretization
+of the  Ordinary Differential Equation (ODE)
+$$ \partial_t \bfY(t) = \sigma(\bfK(t) \bfY(t)  + \bfb(t)), \quad \quad \bfY(0) = \bfY_0 $$
+
+Get intuition about ResNet behavior by using tools from nonlinear ODEs~\cite{HaberRuthotto2017,E2017}. A word of warning is~\cite{ascher2019discrete}.
+
+\end{frame}
+
+% section residual_neural_networks (end)
+
+\section{Crash Course: ODE} % (fold)
+\label{sec:crash_course_ode}
+\begin{frame}\frametitle{ODE Crash Course}
+
+Consider the ODE
+$$ \partial_t \bfy(t) = f(\bfy(t)), \quad \bfy(0) = \bfy_0$$
+with  $f$ differentiable and Jacobian
+$$ \bfJ(\bfy) = \left({\frac {\partial f}{\partial \bfy}}\right)^\top$$
+
+Then (see also~\cite{AscherPetzold1998,AscherGreif2011,Ascher2010})
+\begin{itemize}
+\item If $Re({\rm eig}(\bfJ)) > 0\quad \quad \rightarrow$\ Unstable
+\item If $Re({\rm eig}(\bfJ)) < 0\quad \quad \rightarrow$\ Stable ($\rightarrow$ to stationary point)
+\item If $Re({\rm eig}(\bfJ)) = 0\quad \quad \rightarrow$\ Stable, energy bounded
+\end{itemize}
+
+Reality: $f$ time-dependent ($\leadsto$ penalize time derivatives of weights or use heavier tools, e.g., monotone operators, kinematic eigenvalues)
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Stability of Residual Network}
+	
+	Assume forward propagation of single example $\bfy_0$
+	$$ \partial_t{\bfy}(t) = \sigma(\bfK(t) \bfy(t) + \bfb(t)), \quad \quad \bfy(0) = \bfy_0 $$
+	
+	\bigskip
+	\pause
+	
+	The Jacobian is
+	$$
+	 \bfJ(t) = {\rm diag}\left(\sigma'(\bfK(t) \bfy(t) + \bfb(t))\right) \bfK(t)
+	$$
+	Here, $\sigma'(x) \geq 0$ for $\tanh$, ReLU, \ldots
+	
+	\bigskip
+	\pause
+	
+	Hence, we need to enforce stability. One option:
+	\begin{enumerate}
+		\item $\bfJ$ constant in time  (or changes slowly)
+		\item $Re({\rm eig}(\bfK(t)))= 0$ for every $t$
+	\end{enumerate}
+	
+	
+	\pause
+	
+	\begin{center}
+		Remember that we  learn $\bfK$ $\leadsto$ ensure stability by regularization/constraints!
+	\end{center}
+	
+	
+\end{frame}
+
+
+\begin{frame}\frametitle{Residual Network as a Path Planning Problem}
+
+
+\begin{center}
+	\includegraphics[width=\textwidth]{PathPlanning}
+\end{center}
+
+\bigskip
+\pause
+
+Forward propagation in residual network (continuous)
+$$ \partial_t \bfY(t) = \sigma( \bfK(t) \bfY(t) + \bfb(t)), \qquad \bfY(0) = \bfY_0 $$
+
+The goal is to plan a path (via $\bfK$ and $b$) such that the initial data can be linearly separated
+
+\bigskip
+\pause
+Question: What is a layer, what is depth?
+
+
+\end{frame}
+
+
+
+
+\begin{frame}\frametitle{Stability: Continuous vs. Discrete}
+
+
+Assume $\bfK$ is chosen so that the (continuous) forward propagation is stable
+$$ \partial_t \bfY(t) = \sigma( \bfK(t) \bfY(t)+ \bfb(t)), \qquad \bfY(0) = \bfY_0 $$
+
+And assume we use the forward Euler method to discretize
+$$ \bfY_{l+1} = \bfY_{l} + h \sigma( \bfK_l \bfY_l + \bfb_l) $$
+
+Is the network stable?
+
+
+\bigskip
+\pause
+
+Not always ...
+
+
+\end{frame}
+
+
+\begin{frame}\frametitle{Stability: A Simple Example}
+
+Look at the simplest possible forward propagation
+$$ \partial_t \bfY(t) = \lambda\bfY(t), \qquad \lambda \in \C$$
+
+And assume we use the forward Euler to discretize
+$$ \bfY_{l+1} = \bfY_{l} + h \lambda \bfY_l = (1+h\lambda) \bfY_l$$
+
+Then the method is stable only if
+$$ |1+h\lambda| \le 1 $$
+
+\bigskip
+
+Not every network is stable! Time step size depends on $\lambda$ (which depends on $\bfK$ that is trained).
+
+\end{frame}
+
+\newcommand{\image}[1]{\includegraphics[width=35mm,trim=50 0 70 0,clip=true]{images/E10_Stability/#1}}
+\newcommand{\rottext}[1]{\rotatebox{90}{\hbox to 40mm{\hss  #1\hss}}}
+ \newcommand{\imageDiff}[1]{\includegraphics[width=35mm,trim=50 0 0 0,clip=true]{images/E10_Stability/#1}}
+\begin{frame}
+	\frametitle{Why you should care about stability - 1}
+	
+$$ 
+\min_\theta \hf \|\bfY_N(\theta) - \bfC\|_F^2 \quad \quad \bfY_{j+1}(\theta)  = \bfY_j(\theta) + \frac{10}{N} \tanh \left( \bfK \bfY_j(\theta) \right)
+ $$ 
+where $\bfC = \bfY_{200}(1,1)$, $\bfY_0 \sim \mathcal{N}(0,1)$, and
+$$
+ \bfK(\theta) = \begin{pmatrix} -\theta_1-\theta_2 &           \theta_1  &  \theta_2 \\
+\theta_2    &    -\theta_1-\theta_2 &        \theta_1 \\
+       \theta_1 & \theta_2   &    -\theta_1-\theta_2 \end{pmatrix} 
+	   $$       
+\begin{center}
+\begin{tabular}{cc}
+	objective, $N=5$ & objective, $N=100$\\
+\image{Phic} &
+\image{Phif} 
+\end{tabular}
+\pause
+
+\textbf{\tcr{Next: Compare different inputs $\sim$ generalization}}
+	\end{center}       
+\end{frame}
+\begin{frame}
+	\frametitle{Why you should care about stability - 2}
+	
+\begin{center}
+\begin{tabular}{@{}c@{}c@{}c@{}c@{}}
+	& objective, $\bfY_0^{\rm train}$ & objective, $\bfY_0^{\rm test}$ & abs. diff\\
+	\rottext{unstable, $N=5$}
+	& \image{Phic}
+	& \image{Phict}
+	& \imageDiff{Phic-Phict}\\[-8mm]
+	\rottext{stable, $N=100$}
+	& \image{Phif}
+	& \image{Phift}
+	& \imageDiff{Phif-Phift}
+\end{tabular}	
+\end{center}       
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Stability: A Non-Trivial Example}
+
+Consider the antisymmetric kernel model
+$$
+			\bfK(t) = \bfK(t) - \bfK(t)^\top.
+$$
+Here, $Re({\rm eig}(\bfJ(t)))= 0$ for all $\bftheta$.
+
+\bigskip
+\pause
+			
+Assume we use the forward Euler to discretize
+$$ \bfY_{l+1} = \bfY_{l} + h \sigma( (\bfK_l-\bfK_l^\top) \bfY_l + \bfb_l). $$
+Tricky question: How to pick $h$ to ensure stability?
+
+\pause
+
+Answer: Impossible since eigenvalues of Jacobian are imaginary. Need other method than forward Euler.
+\end{frame}
+
+\begin{frame}
+	\frametitle{Multistep Methods}
+
+	For the antisymmetric kernel model
+	$$
+				\bfK(t) = \bfK(t) - \bfK(t)^\top
+	$$
+	forward Euler is unconditionally unstable. One way out is using higher-order Runge Kutta methods and small step size. 
+	
+	\bigskip
+	
+	\begin{align*}
+		\bfZ_{l+1} & = \bfY_l + h f(\bftheta_l, \bfY_l) \\
+		\bfY_{l+1} & = \bfY_l + \frac{h}{2} \left( f(\bftheta_l, \bfY_l) + f(\bftheta_{l+1}, \bfZ_{l+1}) \right)
+	\end{align*}
+	
+	Better options: RK3, RK4, semi-implicit time stepping.
+\end{frame}
+
+\section{Summary} % (fold)
+\label{sec:numerical_optimization}
+\begin{frame}[fragile]\frametitle{$\Sigma$: Residual Neural Networks}
+
+Idea: Add a skip connection to multilayer perceptrons
+
+Discrete:
+\begin{equation*}
+	\bfY_{l+1} = \red{\bfY_{l}} + \sigma(\bfK_l \bfY_l + \bfb_l)
+\end{equation*}
+
+Continuous:
+\begin{equation*}
+	\partial_t \bfY(t) = \sigma(\bfK(t) \bfY(t) + \bfb(t))
+\end{equation*}
+
+
+Discussion:
+\begin{itemize}
+	\item train well with hundreds of layers
+	\item won many awards and competitions
+	\item can be analyzed as a differential equation
+	\item ResNets are generally not stable
+	\item Change differential equation and(!) discretization to achieve stability
+	\item next time: ResNet training and optimal control
+\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

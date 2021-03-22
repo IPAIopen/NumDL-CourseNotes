@@ -22,6 +22,7 @@
 		\item $\bfY = \left[\bfy_1,\bfy_2,\ldots,\bfy_n \right] \in \R^{n_f \times n}$ - feature matrix
 		\item $\bfc_1,\bfc_,\ldots,\bfc_n \in \R^{n_c}$ - output observations 
 		\item $\bfC = \left[\bfc_1, \bfc_2,\ldots,\bfc_n\right] \in \R^{n_c \times n}$ - observation matrix
+		\item $\R, \R_+, \R_{++}$ - all, non-negative, and positive real numbers
 	\end{itemize}
 \end{frame} 
 
@@ -121,6 +122,13 @@
 \begin{frame}
 	\frametitle{Linear Algebra - 3}
 	\begin{itemize}
+		\item $\bfA^{\dag}$ - Moore-Penrose inverse of full-rank matrix $\bfA$, i.e., 
+		$$
+			\bfA^{\dag} = \begin{cases}
+				(\bfA^{\top} \bfA)^{-1}\bfA, & \bfA \text{ has linearly independent columns}\\
+				\bfA^\top (\bfA \bfA^\top)^{-1}, & \bfA \text{ has linearly independent rows}\\				
+			\end{cases}
+		$$
 		\item ${\rm mat}(\bfv,k,l)$ - reshape vector $\bfv\in\R^{kl}$ into matrix. $k,l$ omitted when dimension clear from context. Note
 		$$
 			{\rm mat}({\rm vec} (\bfA)) = \bfA.

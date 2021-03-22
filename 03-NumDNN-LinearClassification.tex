@@ -1,0 +1,977 @@
+\documentclass[12pt,fleqn,handout]{beamer}
+
+\input{beamerStyle.tex}
+\input{abbrv.tex}
+
+
+\title{Linear Models for Classification}
+\subtitle{Numerical Methods for Deep Learning}
+\date{}
+\begin{document}
+
+\makebeamertitle
+
+\begin{frame}
+	\frametitle{Learning Objective: Linear  Classifiers}
+	
+	In this module we review computational methods for linear classification.
+	
+	\bigskip
+	
+	Learning tasks:
+	\begin{itemize}
+		\item binary classification $\leadsto$ logistic regression
+		\item multiclass problems $\leadsto$ multinomial logistic regression
+	\end{itemize}
+	
+	\bigskip
+	
+	Numerical methods:
+	\begin{itemize}
+		\item convex optimization
+		\item steepest descent
+		\item Newton's method
+	\end{itemize}
+\end{frame}
+
+
+\section{Logistic Regression and Softmax} % (fold)
+\label{sec:logistic_regression_and_softmax}
+
+\begin{frame}
+	\frametitle{Logistic Regression}
+	
+	
+	Assume our data falls into two classes. Denote by $\bfc_{\rm obs}(\bfy)$ the probability that example $\bfy\in\R^{n_f}$ belongs to first category.
+	
+	\bigskip
+	
+	Since output of our classifier $f(\bfy,\bftheta)$ is supposed to be a probability, use logistic sigmoid
+	$$
+		\bfc(\bfy,\bftheta) = \frac{1}{1 + \exp\left(-f(\bfy,\bftheta)\right)}.
+	$$
+	
+	\bigskip
+	
+	Example (Linear Classification): If $f(\bfy,\bftheta)$ is a linear function (adding bias is easy), $\bftheta = \bfw \in \R^{n_f}$ and
+	$$
+		\bfc(\bfy,\bfw) = \frac{1}{1 + \exp(-\bfw^\top\bfy)}.
+	$$
+	
+	\begin{center}
+		this module: consider linear models and focus on loss
+	\end{center}
+	
+\end{frame}
+
+\begin{frame}
+	\frametitle{Multinomial Logistic Regression}
+	
+	Suppose data falls into $n_c\geq 2$ categories and the components of $\bfc_{\rm obs}(\bfy) \in \Delta_{n_c}$ contain probabilities for each class. 
+	
+	\bigskip
+	
+	$\Delta_{n_c}$ is the unit simplex in $\R^{n_c}$
+	\begin{equation*}
+		\Delta_{n_c} = \{ \bfc \in [0,1]^{n_c} \ : \ \bfe_{n_c}^\top \bfc = 1\}.
+	\end{equation*}
+	
+	\bigskip
+	 
+	Applying the logistic sigmoid to each component of $f(\bfy,\bfW)$ not enough to be in $\Delta_{n_c}$. Use
+	$$
+		\bfc(\bfy,\bfW) = \left( \frac{1}{\bfe_{n_c}^\top\exp(\bfW\bfy)} \right) \; \exp(\bfW\bfy).
+	$$
+	
+	\bigskip
+	
+	Note: Division and $\exp$ are applied element-wise!
+	
+\end{frame}
+\begin{frame}
+	\frametitle{Logistic Regression - Loss Function}
+	
+	How similar are $\bfc(\cdot,\bfW)$ and $\bfc_{\rm obs}(\cdot)$?
+
+	\begin{columns}
+		\column{.7\textwidth}
+	Naive idea: Let $\bfY \in \R^{n_f\times n}$ be examples with class probabilities $\bfC_{\rm obs} \in [0,1]^{n_c\times n}$, use 
+	$$
+	\phi(\bfW)= \frac{1}{2n} \sum_{j=1}^n\|\bfc(\bfy_j,\bfW) - \bfc_{j,{\rm obs}} \|_F^2
+	$$
+
+Problems
+\begin{itemize}
+	\item ignores that $\bfc(\cdot,\bfW)$ and $\bfc_{\rm obs}(\cdot)$ are distributions.
+	\item leads to non-convex objective function
+\end{itemize} 
+		
+		\column{.4\textwidth}
+		
+		\begin{tabular}{c}
+			Frobenius\\
+			\includegraphics[width=\textwidth]{Class_Frobenius}\\
+			Cross Entropy\\
+			\includegraphics[width=\textwidth]{Class_CrossEntropy}
+		\end{tabular}
+	\end{columns}
+	
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Example: Designing a Code}
+	
+	Goal: Communicate using minimal number of bits.
+	
+	\bigskip
+	\pause
+	
+	\invisible<beamer|1>{
+	Example: Bob talks $\bfc = [1/2,1/4,1/8,1/8]$ of the time about dogs, cats, fish, and birds, respectively.
+	
+	How many bits need to be transferred on average?}
+
+	\bigskip
+	
+	\invisible<beamer|-2>{
+	\begin{center}
+		\begin{tabular}{l|cc}
+			word & naive code & \invisible<beamer|-3>{better code} \\ \hline
+			dog  & 00         & \invisible<beamer|-3>{ 0 }         \\ 
+			cat  & 01         & \invisible<beamer|-3>{ 10   }      \\
+			fish & 10         & \invisible<beamer|-3>{ 110  }      \\ 
+			bird & 11         & \invisible<beamer|-3>{ 111   }     \\
+		\end{tabular}		
+	\end{center}
+	}
+	
+	\invisible<beamer|-4>{
+	\begin{center}
+		Idea: Quantify information content in probability distribution using average length.		
+	\end{center}
+	}
+	
+	
+	\only<beamer|5>{}
+	
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Entropy}
+
+	Note: Length of word depends on its probability being used. How long should a word be?
+	
+	\bigskip
+	\pause
+	
+	Optimal choice for information for any category
+$$ I = \log_2(\bfc_j^{-1}) = -\log_2(\bfc_j) $$
+
+
+\bigskip
+
+The larger $\bfc_j$, the more frequent we use it, the shorter the word should be. 
+
+\bigskip
+\pause
+
+The entropy is the average (expectation) of information over all classes.
+
+$$ E(\bfc) = -\sum \bfc_j \log_2(\bfc_j) = -\bfc^{\top} \log_2(\bfc) $$
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Example: Designing a Code - 2}
+
+	Entropy for Bob's code is
+	$$
+		\frac{1}{2} \log\left(2\right) + \frac{1}{4} \log\left(4\right) + 2 \frac{1}{8} \log\left(8\right) = 1.75
+	$$
+	average length of word is 1.75 bits $<$ 2 bits for naive code!
+	
+\bigskip
+
+
+\bigskip
+\pause
+
+For the complete tutorial on entropy, read
+{\small
+\tt{http://colah.github.io/posts/2015-09-Visual-Information/}
+}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Properties of Entropy}
+
+\begin{itemize}
+\item recall $\lim_{x\rightarrow 0} x \log x = 0$
+\item prefer sparse distributions (why?)
+\item has been used in compressed sensing type methods
+\end{itemize}
+
+\begin{center}
+\begin{figure}
+\includegraphics[width=5cm]{entropy.jpg}
+\caption{The entropy of a vector $\bfc = (c_1, c_2)^\top$}
+\end{figure}
+\end{center}
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cross Entropy}
+
+
+Measure the average word length when using code designed for $\bfc$ for sending information with probability $\widehat \bfc$
+$$ E(\widehat\bfc, \bfc) = - {\widehat \bfc}^{\top} \log(\bfc). $$
+
+\bigskip
+
+Clearly
+$$ E(\widehat\bfc,  \bfc) \ge E(\bfc, \bfc) $$
+
+\bigskip
+\pause
+
+Example: Alice talks $\bfc = [1/8,1/2,1/4,1/8]$ of the time about dogs, cats, fish, and birds, respectively.
+If she used Bob's code, the average word length would be 
+$$
+	\frac{1}{8} \log\left(2\right) + \frac{1}{2} \log\left(4\right) + \frac{1}{4} \log\left(8\right) + \frac{1}{8} \log\left(8\right) = 2.25 > 1.75
+$$
+
+\bigskip
+\pause
+
+$E$ measures how similar the distributions $\bfc$ and $\widehat \bfc$ are.
+
+
+\bigskip
+\pause
+
+One flaw: $ E(\bfc, \widehat \bfc) \not= E(\widehat \bfc, \bfc)$ (verify for our example!)
+
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cross Entropy for Logistic Regression - 1}
+
+Recall: For a single example and two classes we have
+ $$
+  \bfc(\bfy,\bfw)  = \begin{pmatrix}
+  	{\frac 1 {1+\exp(-\bfw^{\top} \bfy)}} \\
+	1-{\frac 1 {1+\exp(-\bfw^{\top} \bfy)}}
+  \end{pmatrix} 
+  \stackrel{\rm def}{=} 
+  \begin{pmatrix}
+  	h(\bfw^{\top}\bfy) \\1-h(\bfw^{\top}\bfy)
+  \end{pmatrix}
+ $$
+
+Assume we have the observation $\bfc_{\rm obs} = \begin{pmatrix}
+	\bfc_{\rm obs} \\ 1-\bfc_{\rm obs}
+\end{pmatrix}$ then
+\begin{align*}
+ E(\bfc_{\rm obs}, \bfc) & = -\bfc_{\rm obs}^\top\log(\bfc(\bfy,\bfw)) \\
+ & = -\bfc_{\rm obs} \log(h(\bfw^{\top}\bfy)) - (1-\bfc_{\rm obs})
+\log(1-h(\bfw^{\top}\bfy)). 
+\end{align*}
+where
+$$
+ h(z) = \frac{1}{1+\exp(-z)}
+$$
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cross Entropy for Logistic Regression - 2}
+
+
+In the case we have many examples need to sum over the data
+\begin{align*}
+	\bfC(\bfY,\bfw) & = \begin{pmatrix}
+		{\frac 1 {1+\exp(-\bfw^\top \bfY)}} \\
+		1-{\frac 1 {1+\exp(\bfw^\top\bfY)}}
+	\end{pmatrix}  \stackrel{def}{=} \begin{pmatrix}
+		h(\bfw^\top \bfY)\\ 1-h(\bfw^\top\bfY)
+	\end{pmatrix}
+	\in \R^{2\times n}
+\end{align*}
+Assume we have the observation $\bfc_{\rm obs}\in\R^n$. Define
+$$
+\bfC_{\rm obs} = \begin{pmatrix}
+	\bfc_{\rm obs}^\top \\ 1-\bfc_{\rm obs}^\top
+\end{pmatrix} \in \R^{2 \times n}.
+$$
+
+Then the cross entropy is
+\begin{align*}
+	E(\bfC_{\rm obs}, \bfC)  =& - \frac{1}{n} {\rm tr}(\bfC_{\rm obs}^\top \bfC) \\
+	 						 = & -\frac{1}{n} \bfc_{\rm obs}^{\top} \log(h(\bfw^\top\bfY) \\
+							   & - \frac{1}{n}(1-\bfc_{\rm obs})^{\top}\log(1-h(\bfw^\top\bfY)))
+\end{align*}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Cross Entropy for Multinomial Logistic Regression}
+	
+	Similarly, for general case ($n_c\geq2$ classes, $n$ examples). 
+	
+	Recall: 
+	$$\bfC(\bfY,\bfW)  =   \exp(\bfW \bfY)\; {\rm diag} \left({\frac 1 {\bfe_{n_c}^\top\exp(\bfW \bfY)}}  \right)  $$
+
+\bigskip
+
+Get cross entropy by summing over all examples
+
+$$ E(\bfC_{\rm obs},\bfC(\bfY,\bfW)) = -\frac{1}{n}{\rm tr}( \bfC_{\rm obs}^\top\log(\bfC(\bfY,\bfW)) ). $$
+
+We will also call this the \emph{softmax} (cross-entropy) function.
+
+
+\end{frame}
+
+
+\begin{frame}\frametitle{Simplifying the Softmax Function}
+
+Let $\bfS = \bfW \bfY$, then 
+$$ 
+E(\bfC_{\rm obs},\bfS) = -\frac{1}{n}{\rm tr}\left(\bfC_{\rm obs}^{\top} \log\left({\exp(\bfS)}{\rm diag}\left(\frac{1}{\bfe_{n_c}^\top \exp(\bfS) }\right) \right)\right). 
+$$
+\pause
+
+Verify that this is equal to
+\begin{align*}
+	 E(\bfC_{\rm obs},\bfS) = & -\frac{1}{n}\bfe_{n_c}^{\top} \left( \bfC_{\rm obs} \odot \bfS\right) \bfe_{n} \\
+	 & + \frac{1}{n} \bfe_{n_c}^\top \bfC_{\rm obs}\log\left(\bfe_{n_c}^\top\exp(\bfS)\right)^\top
+\end{align*}
+($\odot$ is Hadamard product, $\exp$ and $\log$ component-wise)
+\bigskip
+\pause
+
+
+If $\bfC_{\rm obs}$ has a unit row sum (why?) then $ \bfe_{n_c}^\top \bfC_{\rm obs}^\top = \bfe_n^\top$
+and 
+$$ E(\bfC_{\rm obs},\bfS) = -\frac{1}{n}\bfe_{n_c}^{\top} \left( \bfC_{\rm obs} \odot \bfS\right) \bfe_{n} 
++ \frac{1}{n}\log(\bfe_{n_c}^\top\exp(\bfS))\bfe_{n} $$
+
+
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Numerical Considerations}
+
+Scale to prevent overflow. Note that for an arbitrary $s\in\R$ we have
+$$ E(\bfC_{\rm obs},\bfW\bfY-s) = E(\bfC_{\rm obs},\bfW\bfY) $$
+
+This prevents overflow, but may lead to underflow (and divisions by zero).
+
+\bigskip
+\pause
+
+Note that $s$ does not need to be the same in each row (example). Hence, 
+we can choose $\bfs = \max(\bfW\bfY,[],1 ) \in \R^{1\times n}$ to avoid underflow and overflow.
+
+\bigskip
+\begin{center}
+For stability use $E(\bfC_{\rm obs},\bfS)$ where $ \bfS = \bfW \bfY - \bfe_{n_c} \bfs$.
+\end{center}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Test Problem: Linear Classification}
+
+Generate data that is linearly separable:
+
+\begin{center}
+	\includegraphics[height=40mm]{linearClass}
+\end{center}
+\vspace*{-5mm}
+\begin{verbatim}
+
+a = 3; b = 2;
+
+Y = randn(2,500);
+C = a*Y(1,:) + b*Y(2,:) + 1;
+C(C>0) = 1; C(C<0) = 0;
+C = [C; 1-C]
+
+\end{verbatim}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Coding: Softmax Regression Objective Function}
+
+
+Write a function that computes the softmax function given a data matrix $\bfY$,
+its class $\bfC$, and a matrix $\bfW$.
+
+\bigskip
+
+\begin{verbatim}
+function[E] = softmaxFun(W,Y,C)
+% Your code here
+end
+\end{verbatim}
+Here are some tests your code should master
+\begin{itemize}
+	\item result should always be scalar
+	\item result should not depend on the ordering of the columns of $\bfY$
+	\item for a given $(\bfy,\bfc)$ the output of $E(\bfy,\bfc)$ should be the same as $E(\bfy\bfe^\top, \bfc\bfe^\top)$.
+	\item $\bfW = \alpha \bfI$ and $\bfY = \bfC$ not cause overflow for any $\alpha$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}\frametitle{Linear Classification}
+
+If $\bfW$ can separate the classes then the goal is to minimize the cross entropy (with some potential regularization)
+
+\begin{align*}
+ \bfW^* = & \argmin_{\bfW} \quad - \frac{1}{n}\bfe_{n_c}^{\top} \left( \bfC_{\rm obs} \odot \bfS\right) \bfe_{n} 
++ \frac{1}{n} \log(\bfe_{n_c}^\top \exp(\bfS))\bfe_n \\
+          & \text{subject to} \;\bfS = \bfW \bfY - \bfe_{n_c} \bfs
+\end{align*}
+\pause
+
+This is a smooth convex optimization problem \\ $\Rightarrow$ many existing optimization techniques will work
+
+\bigskip
+
+For large-scale problems, use derivative-based optimization algorithm. (Examples: Steepest Descent, Newton-like methods,  Stochastic Gradient Descent, ADMM, \ldots)
+
+\bigskip
+
+References: \cite{NocedalWright2006,BoydVandenberghe2004,Beck2014,WuFungEtAl2019SoftmaxADMM}
+\end{frame}
+
+ \begin{frame}\frametitle{Differentiating the Softmax Function - 1}
+
+We need to compute the derivative of the cross entropy function with respect to $\bfW$.
+Three hints:
+\begin{itemize}
+\item $\sum \bfw \odot \bfy = \bfw^{\top} \bfy $
+\item $\grad_{\bfw} (\bfw^{\top} \bfy) = \bfy$
+\item ${\rm vec} (\bfW \bfY) = (\bfY^\top \otimes \bfI) {\rm vec} (\bfW) = (\bfI \otimes \bfW) {\rm vec}(\bfY)$
+\end{itemize}
+where $\otimes$ is the Kronecker product.
+
+\bigskip
+
+
+
+We use the common notation:
+\begin{itemize}
+	\item ${\rm vec}(\bfA)$ reshapes matrix $\bfA$ (column-wise) into vector
+	\item ${\rm mat}(\bfa)$ reshapes vector $\bfa$ into matrix, ${\rm mat}({\rm vec}(\bfA)) = \bfA$.
+	\item ${\rm diag}(\bfA) = {\rm diag}({\rm vec}( \bfA))$ builds diagonal matrix with entries given by $\bfA$. 
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 2}
+
+Do it in three steps:
+\begin{enumerate}
+	\item $\nabla_{\bfS} E(\bfS)$ with $\bfS = \bfY \bfW$ (assume w.l.o.g. no shift)
+	\item $\nabla_{\bfW} \bfS = \nabla_{\bfW} (\bfW \bfY)$
+	\item use chain rule to get $\nabla_{\bfW} E(\bfW\bfY)$.
+\end{enumerate}
+
+\bigskip
+\pause
+
+Break the first step down into two terms
+$$ E(\bfS) = \frac{1}{n} \overbrace{-{\rm tr}(\bfC_{\rm obs}^{\top} \bfS)}^{E1} + \frac{1}{n} \overbrace{\log(\bfe_{n_c}^\top\exp(\bfS))\bfe_n}^{E2}, $$
+
+
+\bigskip
+\pause
+
+First term is linear
+
+$$\grad_{\bfS}E_1 =  \grad_{\bfS} {\rm tr}(\bfC_{\rm obs}^{\top} \bfS) = \bfC_{\rm obs}. $$
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 3}
+
+
+$$ E(\bfS) = \frac{1}{n}\overbrace{-{\rm tr}(\bfC_{\rm obs}^{\top} \bfS)}^{E1} + \frac{1}{n} \overbrace{\log(\bfe_{n_c}^\top\exp(\bfS))\bfe_n}^{E2}  $$
+
+
+\bigskip
+
+Second  term requires a bit more care
+
+$$ \bfJ_{\bfS}E_2 = \bfJ_{\bfS} \bfe_n^{\top}\log(\bfe_{n_c}^\top \exp(\bfS)) = 
+ \bfe_n^{\top}\bfJ_{\bfS}  \log(\bfe_{n_c}^\top\exp(\bfS))  $$
+
+\pause 
+ and
+ 
+$$ \bfJ_{\bfS}  \log(\bfe_{n_c}^\top\exp(\bfS)) = {\rm diag}
+\left( {\frac {1}{\bfe_{n_c}^\top\exp(\bfS)}}\right)
+\bfJ_{\bfS}\left(\bfe_{n_c}^\top\exp(\bfS) \right) $$
+ 
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 4}
+	Recall:
+$$ \bfJ_{\bfS}  E_2 = \bfe_n^\top  {\rm diag}
+\left( {\frac {1}{\bfe_{n_c}^\top\exp(\bfS)}}\right)
+\bfJ_{\bfS}\left(\bfe_{n_c}^\top\exp(\bfS) \right) $$
+
+Focus on last term:
+\begin{align*}
+   \bfJ_{\bfS} (\bfe_{n_c}^\top \exp(\bfS)) & = \bfJ_{\bfS} \left(\left(\bfI \otimes \bfe_{n_c}^{\top} \right)  {\rm vec}(\exp(\bfS))\right)\\
+   &  = (\bfI \otimes \bfe_{n_c}^{\top})  {\rm diag}( {\rm vec}(\exp(\bfS)))
+\end{align*}
+ 
+ \pause
+ Putting it together
+ 
+ 
+ $$ \bfJ_{\bfS}E_2 =  \bfe_n^{\top}\ {\rm diag}
+\left( {\frac {1}{\bfe_{n_c}^\top \exp(\bfS)}}\right) \  ( \bfI \otimes \bfe_{n_c}^{\top})  {\rm diag}( {\rm vec}(\exp(\bfS))) $$
+
+
+\pause
+
+\begin{center}
+	Left to do: Take transpose
+\end{center}
+
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 5}
+
+ 
+ $$ \grad_{\bfS}E_2 =     {\rm diag}( {\rm vec}(\exp(\bfS))) (\bfI \otimes \bfe_{n_c})
+  {\rm diag}
+\left( {\frac {1}{\bfe_{n_c}^\top\exp(\bfS)}}\right) \bfe_n
+     $$
+\pause
+simplifying
+
+ $$ \grad_{\bfS}E_2 =     {\rm diag}( {\rm vec}(\exp(\bfS))) (\bfI \otimes \bfe_{n_c})
+\left( {\frac {1}{\bfe_{n_c}^\top\exp(\bfS)}}\right)
+     $$
+ 
+\pause    
+     Avoid ${\rm diag}$ and simplify using  matrix representation
+     
+ $$ \grad_{\bfS}E_2 =     \exp(\bfS) \odot 
+\left( \bfe_{n_c} \left({\frac {1}{\bfe_{n_c}^\top \exp(\bfS)}}\right)\right) 
+     $$
+     
+     \bigskip
+     \pause
+     Finally combine gradients of $E_1$ and $E_2$
+     
+$$     \grad_{\bfS}E =  -\frac{1}{n}\bfC_{\rm obs} + \frac{1}{n}\exp(\bfS) \odot 
+\left( \bfe_{n_c} \left({\frac {1}{\bfe_{n_c}^\top \exp(\bfS)}}\right)\right) . $$
+     
+    
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Differentiating the Softmax Function - 6}
+
+$$ E(\bfW) = -\frac{1}{n}\overbrace{{\rm tr}(\bfC_{\rm obs}^{\top} (\bfW\bfY))}^{E1} + \frac{1}{n} \overbrace{\bfe_n^{\top}\log(\bfe_{n_c}^\top \exp(\bfW\bfY))}^{E2}  $$
+
+\bigskip
+Note that
+$$
+	\nabla_{\bfW} \bfS = \nabla_{\bfW} (\bfW \bfY) = \nabla_{\bfW} \left( (\bfY^\top \otimes \bfI) {\rm vec}(\bfW) \right) = \bfY \otimes \bfI. 
+$$
+
+
+\bigskip
+
+Hence, applying the chain rule gives
+     
+$$     \grad_{\bfW}E = \frac{1}{n} \left( -\bfC_{\rm obs} + \exp(\bfS) \odot 
+\left( \bfe_{n_c} \left({\frac {1}{\bfe_{n_c}^\top \exp(\bfS)}}\right)\right) \right)\bfY^\top. $$
+     
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Coding: Differentiating the Softmax Function}
+
+Extend your softmax function, so that it returns the gradient if needed.
+
+\begin{verbatim}
+function[E,dE] = softmaxFun(W,Y,C)
+
+% Your code from before
+
+if nargout > 1
+
+% Your code for gradient here
+end
+
+end
+\end{verbatim}
+
+\end{frame}
+
+
+
+\begin{frame}[fragile]\frametitle{Testing your Derivatives}
+
+Your derivatives are assumed to be wrong unless you prove otherwise.
+
+Test based on Taylor theorem. Let $\bfW$ be fixed and $\bfD$ be a random direction (same size as $\bfW$):
+
+{\begin{small}
+\begin{center}
+\begin{tabular}{c|c|c}
+ $h$  & $E(\bfW + h\bfD) -    E(\bfW)$ &  $E(\bfW + h\bfD) -    E(\bfW) - h {\rm tr}(\bfD^{\top} \nabla E(\bfW))$ \\
+ \hline
+ 1   &   &   \\
+ $2^{-1}$   &   &   \\
+ $2^{-2}$   &   &   \\
+ $2^{-3}$   &   &   \\
+ $2^{-4}$   &   &   \\
+ $2^{-5}$   &   &
+ \end{tabular}
+ \end{center}
+ \end{small}}
+
+
+\pause
+
+First column should decay as ${\cal O}(h)$ \\
+Second column should decay as ${\cal O}(h^2)$ \\
+
+
+\end{frame}
+
+
+
+\begin{frame}\frametitle{Derivative-Based Optimization: Steepest Descent}
+
+
+To minimize the energy go ``down-hill''
+\begin{center}
+	\includegraphics[width=5cm]{steepestDescent.jpg}
+\end{center}
+
+Iterate:
+$$ \bfW_{k+1} = \bfW_k + \alpha \bfD, \quad \bfD =  -\grad E(\bfW_k). $$
+Guaranteed to be a descent direction but need to make sure that
+$$ E(\bfW_k + \alpha \bfD) < E(\bfW_k)  $$
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{Line Search Problem}
+	\begin{center}
+		\iwidth=40mm
+		\iheight=30mm
+		\begin{tabular}{cc}
+			objective function
+			&
+			linesearch
+			\\
+			\scriptsize
+			\input{images/lineSearch-contour.tex}
+			&
+			\scriptsize
+			\input{images/lineSearch-linesearch.tex}
+		\end{tabular}
+	\end{center}
+	Let $E$ be the cross entropy, $\bfW_k$ the current weights, and $\bfD$ the search direction.  The line search problem is:
+	\begin{equation*}
+		\min_{\alpha > 0} \phi(\alpha) \quad \text{ where } \quad \phi(\alpha) = E(\bfW_k + \alpha \bfD).
+	\end{equation*}
+\end{frame}
+
+
+\begin{frame}\frametitle{Armijo Line Search}
+
+A method for inexact line search
+
+
+\begin{itemize}
+\item Start with $\alpha = \alpha_0$
+\item Test $ E(\bfW + \alpha \bfD) {<} E(\bfW)$
+\item If fail $\alpha \leftarrow \hf \alpha$
+\end{itemize}
+
+\bigskip
+\pause
+
+A few (small) but helpful tricks
+\begin{itemize}
+\item Choose your $\alpha_0$ based on the problem
+\item If line search is needed ($\alpha\not=\alpha_0$) at iteration $k$ set $\alpha_0 = \alpha_k$ in next iteration.
+\item If no line search is needed ($\alpha =\alpha_0$) at iteration $k$ set $\alpha_0 = \gamma\alpha_k$, $\gamma>1$ in next iteration.
+\end{itemize}
+
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Coding: Steepest Descent }
+
+Write a code for steepest descent with Armijo linesearch.
+
+\begin{verbatim}
+function W = steepestDescent(E,W,param)
+% Inputs:
+%     E  - function that provides value and gradient
+%     W  - starting guess
+%  param - struct with parameters
+
+alpha     = param.maxStep; % max step size
+maxIter   = param.maxIter; % max number of iterations
+
+for i=1:maxIter
+
+% Your code here
+end
+\end{verbatim}
+
+\end{frame}
+
+
+\section{Intro to Newton's Method} % (fold)
+\label{sec:logistic_regression_and_softmax}
+
+\begin{frame}\frametitle{Newton-like Methods}
+
+Goal: Solve $\min_{\bfW} E(\bfW)$. Consider $k$th iteration. Assume $E$ convex.
+
+\bigskip
+\pause
+
+To find optimal step $\bfD$, use Taylor's theorem
+{\small{
+$$ E(\bfW_k + \bfD) = E(\bfW_k) + \grad E(\bfW_k)^{\top} \bfD +
+\hf \bfD^{\top} \grad^2 E(\bfW_k) \bfD +
+{\cal O}(\|\bfD\|^3)  $$}}
+and differentiate w.r.t $\bfD$ 
+\pause
+to obtain
+$$ \grad^2 E(\bfW_k) \bfD = -\grad E(\bfW_k). $$
+
+\pause
+
+Practical Newton methods (see, e.g., \cite[Ch.7]{NocedalWright2006})
+\begin{itemize}
+\item do not compute $\bfD$ accurately (add line search for safety)
+\item use, e.g., Conjugate Gradient (CG) methods
+\item do not generate $\grad^2 E$ since CG only needs mat-vecs
+\item give quadratic/superlinear/good linear convergence
+\end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Newton-like Methods for Softmax}
+
+Need to compute Hessian $\nabla^2 E$. Recall: 
+\begin{align*}
+	\grad_{\bfW}E &= \frac{1}{n} \left( -\bfC_{\rm obs} + \exp(\bfS) \odot 
+	\left( \bfe_{n_c} \left({\frac {1}{\bfe_{n_c}^\top \exp(\bfS)}}\right)\right) \right)\bfY^\top\\
+              & =  \grad_\bfS E(\bfS) \bfY^\top,
+\end{align*}
+where $\bfS = \bfW \bfY$. 
+\pause
+For $\bfw = {\rm vec}(\bfW)$ and $\bfs = {\rm vec}(\bfS)$ we know that
+$$
+\nabla^2_\bfw E(\bfw) = (\bfY \otimes \bfI_{n_c}) \; \nabla_{\bfs}^2 E(\bfs)\;  (\bfY^\top \otimes \bfI_{n_c})
+$$
+
+\pause
+
+Remarks:
+\begin{itemize}
+\item size of $\nabla^2_\bfs E$ is $n_c n \times  n_c n$, typically sparse
+\item size of $\nabla^2_\bfw E$ is $n_c n_f \times n_c n_f$, typically dense
+\item building Hessian can be costly (when $n$ is large)
+\item Hessian is spd since $E$ is convex in $\bfS$
+\end{itemize}
+
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Hessian of Softmax Function - 1}
+
+Recall
+$$ \grad_\bfS E = \frac{1}{n} \left(-\bfC_{\rm obs} + \exp(\bfS)  \odot \frac 1 {\bfe_{n_c}\bfe_{n_c}^\top\exp(\bfS)} \right) $$
+
+Let's first vectorize this  $\bfs = {\rm vec}(\bfS)$ and $\bfc = {\rm vec}(\bfC_{\rm obs})$
+
+$$ \grad_\bfs E = \frac{1}{n} \left(- \bfc + \exp(\bfs)  \odot \frac{1 }{(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top}))\exp(\bfs)} \right) $$
+
+\bigskip
+\pause
+
+Use product rule
+
+\begin{eqnarray*}
+\nabla^2_\bfs E &=& \frac{1}{n}{\rm diag} \left( {\frac 1 {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)
+\bfJ_\bfs  \exp(\bfs)   +  \\
+&&
+\frac{1}{n}{\rm diag} (\exp (\bfs)) \bfJ_\bfs \left( {\frac 1 {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)\\
+&=& \nabla^2_\bfs E_1 + \nabla^2_\bfs E_2
+\end{eqnarray*}
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Hessian of Softmax Function - 2}
+
+First term is easy
+\begin{eqnarray*}
+\nabla^2_{\bfs} E_1(\bfs) &=& \frac{1}{n}{\rm diag} \left( {\frac 1 {(\bfI\otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)
+{\rm diag} \left( \exp(\bfs)\right) \\
+&=&
+\frac{1}{n}{\rm diag} \left( {\frac {\exp(\bfs)} {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right) 
+\end{eqnarray*}
+\pause
+\bigskip
+
+
+Reshaped back, a matrix-vector-product with $\bfV \in \R^{n_c \times n_f}$ is
+
+$$ \nabla^2_{\bfS} E_1(\bfS) \bfV = \frac{1}{n}  \left( \left( {\frac {\exp(\bfS)} {\bfe_{n_c}\bfe_{n_c}^\top \exp(\bfS)}} \right) \odot ( \bfV \bfY) \right) \bfY^{\top} $$
+
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Hessian of Softmax Function - 3}
+	
+$$
+E_2 =\frac{1}{n} {\rm diag} (\exp (\bfs)) \underbrace{\bfJ_\bfs \left( {\frac 1 {(\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top})) \exp(\bfs)}} \right)}_{=:\bfT}.
+$$
+ Using chain rule, we get
+ $$
+ \bfT = - {\rm diag}\left({\frac 1 {\left((\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^{\top} )) \exp(\bfs)}\right)^2}\right) (\bfI \otimes (\bfe_{n_c} \bfe_{n_c}^\top)) {\rm diag}(\exp(\bfs))
+ $$
+
+ \pause\bigskip
+
+ After reshape the matrix-vector-product with $\bfV \in \R^{n_f \times n_c}$ is
+
+ \begin{align*}
+ \nabla^2_{\bfS} E_2(\bfS) \bfV=  - \frac{1}{n}\left( \frac {(\exp(\bfS))}{\bfe_{n_c}(\bfe_{n_c}^\top \exp(\bfS))^2 }\right) 
+   \odot (\bfe_{n_c}\bfe_{n_c}^\top (\exp(\bfS) \odot (\bfV \bfY)))\bfY^{\top}  
+ \end{align*}
+
+\end{frame}
+
+
+\begin{frame}[fragile]\frametitle{Newton-CG for Softmax function }
+
+Mat-vecs with Hessian can be computed as
+\begin{eqnarray*}
+	\nabla^2_\bfW E(\bfW) \bfV&= \frac{1}{n}  \left( \left( {\frac {\exp(\bfS)} {\bfe_{n_c}\bfe_{n_c}^\top \exp(\bfS)}} \right) \odot ( \bfV \bfY) \right)\bfY^\top \\
+	-&\frac{1}{n}  \left( {\frac {(\exp(\bfS))}{\bfe_{n_c}(\bfe_{n_c}^\top\exp(\bfS))^2 }}\right)  \odot (\bfe_{n_c}\bfe_{n_c}^\top (\exp(\bfS) \odot (\bfV \bfY)) )\bfY^\top
+\end{eqnarray*}
+(possible to further simplify this to reduce operations)
+
+\bigskip
+\pause
+
+Now, ready to use matrix-free Newton method with Armijo linesearch and CG solver that computes
+$$
+	\nabla^2_\bfW E(\bfW) \bfD \approx -\nabla_\bfW E(\bfW).
+$$
+
+Remarks:
+\begin{itemize}
+	\item how well to solve? use large tolerance on relative residual
+	\item can accelerate CG with preconditioning $\leadsto$ PCG
+	\item possible to omit second term in Hessian?
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]\frametitle{Coding: Hessian of Softmax Function}
+
+Extend your softmax function, so that it returns a function handle computing mat-vecs with Hessian if needed.
+
+\begin{verbatim}
+function[E,dE,d2Emv] = softmaxFun(W,Y,C)
+
+% Your code from before
+if nargout > 1
+% Your code from before
+end
+
+if nargout > 2
+
+% Your new code here
+d2Emv = @(V) ...;
+end
+end
+\end{verbatim}
+\begin{center}
+	Don't forget to check your derivatives!
+\end{center}
+\end{frame}
+
+
+\begin{frame}\frametitle{Project: Linear Classification for MNIST}
+	 Write a code for solving
+
+	\begin{align*}
+	 \bfW^* = & \argmin_{\bfW} \quad - \frac{1}{n}\bfe_{n_c}^{\top} \left( \bfC_{\rm obs} \odot \bfS\right) \bfe_{n} 
+	+ \frac{1}{n} \log(\bfe_{n_c}^\top \exp(\bfS))\bfe_n \\
+	          & \text{subject to} \;\bfS = \bfW \bfY - \bfe_{n_c} \bfs
+	\end{align*}
+	
+			and apply it to the MNIST test data set.
+			
+	\begin{enumerate}
+		\item write a stable code for evaluating the softmax loss
+		
+		\item implement and test the derivatives we computed in class or use automatic differentiation to compute gradients and Hessians.
+		
+		\item use optimal weights to predict labels for test data. How well does your solution generalize?
+		
+		\item visualize the rows of $\bfW$ as images.
+		
+		\item compare with the results you got in the last module.
+	\end{enumerate}
+
+\end{frame}
+
+\begin{frame}
+	\frametitle{$\Sigma$ : Linear Classifiers}
+	
+	\begin{itemize}
+		\item classification: use (multinomial) logistic regression
+		\item compare to least-squares
+		\begin{itemize}
+			\item advantage: output is in unit simplex
+			\item disadvantage: problem does not decouple into $n_c$ subproblems, statistical interpretation?
+		\end{itemize}
+		\item loss function: cross-entropy preferred (convex)
+		\item can choose between many numerical optimizers: SD, Newton, $\ell$BFGS, ADMM,\ldots
+		\item useful in supervised and semi-supervised tasks
+		\item work well iff classes can be separated by hyperplanes
+	\end{itemize}
+\end{frame}
+
+\begin{frame}[allowframebreaks]
+	\frametitle{References}
+\bibliographystyle{abbrv}
+\bibliography{NumDNN}
+
+\end{frame}
+
+\end{document}
